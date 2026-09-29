@@ -1085,7 +1085,47 @@
             alert(`Detalhes do ${tipo}:\n\nNumeração: ${numeracaoCompleta}\nData de Instauração: ${dataF}\nAssunto: ${assunto}`);
         }
 
-        function prepararEdicao(id, tipo, numeracao, data, assunto) {
+        // Exige autenticação recente de uma das contas autorizadas para editar/excluir.
+        // A senha não fica armazenada no HTML; a validação é feita pelo Supabase Auth.
+        const CONTAS_AUTORIZADAS_INQUERITOS = [
+            '3bpmi@policiamilitar.sp.gov.br',
+            '3bpmisjd@policiamilitar.sp.gov.br'
+        ];
+
+        async function autenticarAcaoInquerito(acao) {
+            const emailInformado = prompt(
+                `Autorização necessária para ${acao} registro.\ 
+Informe o e-mail de sua Seção:`
+            );
+            if (emailInformado === null) return false;
+
+            const email = emailInformado.trim().toLowerCase();
+            if (!CONTAS_AUTORIZADAS_INQUERITOS.includes(email)) {
+                alert('E-mail não autorizado para editar ou excluir IP/IPM.');
+                return false;
+            }
+
+            const senha = prompt('Informe a senha da conta selecionada:');
+            if (senha === null || !senha) return false;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email,
+                password: senha
+            });
+
+            if (error || !data?.user?.email ||
+                data.user.email.toLowerCase() !== email) {
+                alert('Autenticação não realizada. Verifique o e-mail e a senha.');
+                return false;
+            }
+
+            return true;
+        }
+
+        async function prepararEdicao(id, tipo, numeracao, data, assunto) {
+            const autorizado = await autenticarAcaoInquerito('editar');
+            if (!autorizado) return;
+
             document.getElementById('tabelaContainer').style.display = 'none';
             document.getElementById('formEdicaoContainer').style.display = 'block';
             document.getElementById('edit_id').value = id;
@@ -1102,6 +1142,9 @@
 
         document.getElementById('formEdicao').addEventListener('submit', async e => {
             e.preventDefault();
+            const autorizado = await autenticarAcaoInquerito('salvar alterações');
+            if (!autorizado) return;
+
             const id = document.getElementById('edit_id').value;
             const tipo = document.getElementById('edit_tipo').value;
             const numeracao = parseInt(document.getElementById('edit_numeracao').value);
@@ -1125,6 +1168,9 @@
         });
 
         async function excluirInquerito(id, tipo) {
+            const autorizado = await autenticarAcaoInquerito('excluir');
+            if (!autorizado) return;
+
             if (confirm('Tem certeza que deseja excluir este inquérito?')) {
                 const { error } = await supabaseClient
                     .from('inqueritos_pm')
@@ -1132,7 +1178,8 @@
                     .eq('id', id);
 
                 if (error) {
-                    alert('Erro ao excluir registro!');
+                    console.error('Erro ao excluir registro:', error);
+                    alert('Erro ao excluir registro. Verifique suas permissões no banco de dados.');
                 } else {
                     alert('Registro excluído com sucesso!');
                     renderizarTabela(tipo);
