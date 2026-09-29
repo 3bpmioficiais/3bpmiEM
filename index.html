@@ -85,6 +85,13 @@
             margin-top: 4px;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
         .badge-status {
             background-color: rgba(200, 16, 46, 0.12);
             border: 1px solid rgba(200, 16, 46, 0.4);
@@ -99,7 +106,6 @@
             align-items: center;
             gap: 8px;
             white-space: nowrap;
-            flex-shrink: 0;
         }
 
         .status-dot {
@@ -108,6 +114,24 @@
             background-color: #2ed573;
             border-radius: 50%;
             box-shadow: 0 0 10px #2ed573;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid var(--pmesp-red);
+            color: var(--pmesp-white);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--pmesp-red);
         }
 
         /* Main Container & Layout Reenquadrado */
@@ -433,7 +457,8 @@
         }
 
         @media (max-width: 768px) {
-            header { padding: 15px 20px; gap: 10px; }
+            header { padding: 15px 20px; gap: 10px; flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; justify-content: space-between; }
             .brasao-img { height: 50px; }
             .header-titles h1 { font-size: 0.9rem; }
             .header-titles p { font-size: 0.75rem; }
@@ -453,9 +478,12 @@
                 <p>Linktree - 3º Batalhão de Caçadores</p>
             </div>
         </div>
-        <div class="badge-status">
-            <span class="status-dot"></span>
-            Sistema Ativo
+        <div class="header-actions">
+            <div class="badge-status">
+                <span class="status-dot"></span>
+                Sistema Ativo
+            </div>
+            <button id="btnLogout" class="btn-logout" style="display: none;">Sair</button>
         </div>
     </header>
 
@@ -816,17 +844,34 @@
         const scriptURLOperacoes = 'https://script.google.com/macros/s/AKfycbwU2bZX56SWM4Sc3hCc8JrAMN2sZz2H-R-7o_vIYRcdqRTduQnvyhuXpLObkvtNOHjv/exec';
         const scriptURLSolenidades = 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec';
 
-        // Lógica de Login e Controle de Seções por Senha (Incluindo Administrador)
+        // Lógica de Login e Controle de Seções por Supabase Auth
         document.addEventListener("DOMContentLoaded", function() {
-            // Seleciona os blocos de seções completos (.section-wrapper)
             const secoes = document.querySelectorAll("main .section-wrapper");
             
             // Esconde todas as seções inicialmente
-            secoes.forEach(secao => {
-                secao.style.display = "none";
+            secoes.forEach(secao => { secao.style.display = "none"; });
+
+            // Configura o evento do botão de Logout
+            document.getElementById("btnLogout").addEventListener("click", async function() {
+                await supabaseClient.auth.signOut();
+                location.reload(); // Recarrega a página para limpar o estado e exibir o modal novamente
             });
 
-            // Cria a caixa de diálogo (Modal de Senha)
+            // Verifica se já existe uma sessão ativa (para não precisar logar a toda hora)
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    liberarAcessosPorEmail(session.user.email, secoes);
+                } else {
+                    criarModalLogin(secoes);
+                }
+            });
+        });
+
+        function criarModalLogin(secoes) {
+            // Remove modal anterior se existir para evitar duplicações
+            const modalAntigo = document.getElementById("modalLoginSeguranca");
+            if (modalAntigo) modalAntigo.remove();
+
             const modalDiv = document.createElement("div");
             modalDiv.id = "modalLoginSeguranca";
             modalDiv.style.cssText = `
@@ -838,61 +883,65 @@
             
             modalDiv.innerHTML = `
                 <div style="background-color: #1e222a; border: 1px solid #2d3542; border-top: 4px solid #c8102e; padding: 35px; border-radius: 10px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-                     <img src="Brasão_3BC.png" alt="Brasão do 3º Batalhão de Caçadores" style="width: 135px; margin-bottom: 20px;">
-                    <h3 style="color: #ffffff; margin-bottom: 12px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px;">Acesso Restrito</h3>
-                    <p style="color: #9ba3af; font-size: 0.85rem; margin-bottom: 18px; line-height: 1.4;">Insira a senha de sua Seção:</p>
+                    <img src="Brasão_3BC.png" alt="Brasão do 3º Batalhão de Caçadores" style="width: 120px; margin-bottom: 20px;">
+                    <h3 style="color: #ffffff; margin-bottom: 12px; font-size: 1.25rem; text-transform: uppercase;">Acesso Restrito</h3>
+                    <p style="color: #9ba3af; font-size: 0.85rem; margin-bottom: 18px;">Entre com suas credenciais institucionais:</p>
                     <form id="formLoginSecao">
-                        <input type="password" id="senhaSecao" placeholder="Digite sua senha..." required style="width: 100%; padding: 12px 15px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; font-size: 1rem; margin-bottom: 16px; outline: none; text-align: center;">
-                        <button type="submit" style="background-color: #c8102e; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; width: 100%; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: background 0.2s;">Entrar</button>
+                        <input type="email" id="emailSecao" placeholder="E-mail da seção..." required style="width: 100%; padding: 12px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; margin-bottom: 12px; outline: none;">
+                        <input type="password" id="senhaSecao" placeholder="Senha..." required style="width: 100%; padding: 12px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; margin-bottom: 16px; outline: none;">
+                        <button type="submit" id="btnLoginSubmit" style="background-color: #c8102e; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; width: 100%; text-transform: uppercase; cursor: pointer;">Entrar</button>
                     </form>
-                    <p id="erroLogin" style="color: #c8102e; font-size: 0.8rem; margin-top: 12px; display: none; font-weight: 600;">Senha incorreta. Tente novamente.</p>
+                    <p id="erroLogin" style="color: #c8102e; font-size: 0.8rem; margin-top: 12px; display: none; font-weight: 600;">E-mail ou senha incorretos.</p>
                 </div>
             `;
             
             document.body.appendChild(modalDiv);
 
-            // Validação das senhas ao enviar
-            document.getElementById("formLoginSecao").addEventListener("submit", function(e) {
+            document.getElementById("formLoginSecao").addEventListener("submit", async function(e) {
                 e.preventDefault();
-                const senha = document.getElementById("senhaSecao").value;
+                const email = document.getElementById("emailSecao").value;
+                const password = document.getElementById("senhaSecao").value;
+                const btn = document.getElementById("btnLoginSubmit");
+                
+                btn.disabled = true;
+                btn.innerText = "Autenticando...";
 
-                // Senha de Administrador (Acesso Total)
-                const senhaAdmin = "9999"; 
+                // Autentica de forma segura direto no servidor do Supabase
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-                if (senha === senhaAdmin) {
-                    modalDiv.remove();
-                    secoes.forEach(secao => { secao.style.display = "block"; });
-                    return;
-                }
-
-                // Senhas específicas por seção
-                let indiceSecao = -1;
-                if (senha === "123") indiceSecao = 0;      // P/1 - Pessoal
-                else if (senha === "321") indiceSecao = 1; // P/3 - Operações
-                else if (senha === "111") indiceSecao = 2; // P/4 - Logística
-                else if (senha === "222") indiceSecao = 3; // P/5 - Comunicação Social
-                else if (senha === "333") indiceSecao = 4; // SPJMD
-
-                if (indiceSecao !== -1) {
-                    modalDiv.remove();
-                    if (secoes[indiceSecao]) {
-                        secoes[indiceSecao].style.display = "block";
-                    }
-                } else {
+                if (error) {
                     document.getElementById("erroLogin").style.display = "block";
+                    btn.disabled = false;
+                    btn.innerText = "Entrar";
+                } else {
+                    modalDiv.remove();
+                    liberarAcessosPorEmail(data.user.email, secoes);
                 }
             });
-        });
+        }
 
-        // Função auxiliar para validar a senha da SPJMD ("333") ou Administrador ("9999")
-        function verificarSenhaSPJMD() {
-            const senhaInformada = prompt("Insira a senha da SPJMD para prosseguir:");
-            if (senhaInformada === null) return false; // Usuário cancelou
-            if (senhaInformada === "333" || senhaInformada === "9999") {
-                return true;
-            } else {
-                alert("Senha incorreta! Ação negada.");
-                return false;
+        // Função que decide quais seções liberar com base em quem fez login
+        function liberarAcessosPorEmail(email, secoes) {
+            // Torna o botão de logout visível após autenticação bem-sucedida
+            document.getElementById("btnLogout").style.display = "block";
+
+            // Libera tudo se for o admin global ou o e-mail 3bpmi
+            if (email === "3bpmi@policiamilitar.sp.gov.br") {
+                secoes.forEach(secao => { secao.style.display = "block"; });
+                return;
+            }
+
+            // Libera seções específicas dependendo de qual e-mail logou
+            if (email.includes("p1")) secoes[0].style.display = "block";
+            else if (email.includes("p3")) secoes[1].style.display = "block";
+            else if (email.includes("p4")) secoes[2].style.display = "block";
+            else if (email.includes("p5")) secoes[3].style.display = "block";
+            else if (email.includes("sjd")) secoes[4].style.display = "block";
+            else {
+                alert("Usuário autenticado, mas sem seção vinculada.");
             }
         }
 
@@ -1020,8 +1069,8 @@
                         <td>${item.assunto}</td>
                         <td class="action-btns" style="text-align: center; white-space: nowrap;">
                             <button class="btn-view" onclick="visualizarDetalhes('${item.id}', '${item.tipo}', '${numeracaoCompleta}', '${item.data_instauracao}', \`${item.assunto}\`)">Ver</button>
-                            <button class="btn-edit" onclick="prepararEdicaoSegura('${item.id}', '${item.tipo}', ${item.numeracao}, '${item.data_instauracao}', \`${item.assunto}\`)">Editar</button>
-                            <button class="btn-delete" onclick="excluirInqueritoSeguro('${item.id}', '${item.tipo}')">Excluir</button>
+                            <button class="btn-edit" onclick="prepararEdicao('${item.id}', '${item.tipo}', ${item.numeracao}, '${item.data_instauracao}', \`${item.assunto}\`)">Editar</button>
+                            <button class="btn-delete" onclick="excluirInquerito('${item.id}', '${item.tipo}')">Excluir</button>
                         </td>
                     </tr>
                 `;
@@ -1034,11 +1083,6 @@
         function visualizarDetalhes(id, tipo, numeracaoCompleta, data, assunto) {
             const dataF = data ? data.split('-').reverse().join('/') : '';
             alert(`Detalhes do ${tipo}:\n\nNumeração: ${numeracaoCompleta}\nData de Instauração: ${dataF}\nAssunto: ${assunto}`);
-        }
-
-        function prepararEdicaoSegura(id, tipo, numeracao, data, assunto) {
-            if (!verificarSenhaSPJMD()) return;
-            prepararEdicao(id, tipo, numeracao, data, assunto);
         }
 
         function prepararEdicao(id, tipo, numeracao, data, assunto) {
@@ -1080,8 +1124,7 @@
             }
         });
 
-        async function excluirInqueritoSeguro(id, tipo) {
-            if (!verificarSenhaSPJMD()) return;
+        async function excluirInquerito(id, tipo) {
             if (confirm('Tem certeza que deseja excluir este inquérito?')) {
                 const { error } = await supabaseClient
                     .from('inqueritos_pm')
