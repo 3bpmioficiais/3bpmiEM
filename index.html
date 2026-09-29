@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão EM - 3º BC</title>
+    <title>Linktree - Polícia Militar do Estado de São Paulo</title>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --pmesp-black: #111111;
-            --pmesp-dark-gray: #1e2229;
-            --pmesp-card-bg: #272c35;
-            --pmesp-hover: #323843;
+            --pmesp-black: #0b0d10;
+            --pmesp-dark-gray: #15181e;
+            --pmesp-card-bg: #1e222a;
+            --pmesp-card-hover: #262c36;
             --pmesp-red: #c8102e;
+            --pmesp-red-hover: #e61234;
             --pmesp-white: #ffffff;
-            --pmesp-light-gray: #b2a0ad;
-            --pmesp-border: #3a414e;
+            --pmesp-light-gray: #9ba3af;
+            --pmesp-border: #2d3542;
         }
 
         * {
@@ -38,26 +39,30 @@
         header {
             background-color: var(--pmesp-black);
             border-bottom: 3px solid var(--pmesp-red);
-            padding: 20px 40px;
+            padding: 24px 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 18px;
             min-width: 0;
         }
 
         .brasao-img {
-            height: 85px;
+            height: 75px;
             width: auto;
             object-fit: contain;
             flex-shrink: 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
         .header-titles {
@@ -65,27 +70,27 @@
         }
 
         .header-titles h1 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             font-weight: 700;
             color: var(--pmesp-white);
             line-height: 1.2;
         }
 
         .header-titles p {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             color: var(--pmesp-light-gray);
             letter-spacing: 0.5px;
             margin-top: 4px;
         }
 
         .badge-status {
-            background-color: rgba(200, 16, 46, 0.15);
-            border: 1px solid var(--pmesp-red);
+            background-color: rgba(200, 16, 46, 0.12);
+            border: 1px solid rgba(200, 16, 46, 0.4);
             color: #4dff4d;
-            padding: 6px 14px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 30px;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -102,47 +107,61 @@
             height: 8px;
             background-color: #2ed573;
             border-radius: 50%;
-            box-shadow: 0 0 8px #2ed573;
+            box-shadow: 0 0 10px #2ed573;
         }
 
-        /* Main Container */
+        /* Main Container & Layout Reenquadrado */
         main {
-            max-width: 1000px;
+            max-width: 1200px;
             width: 100%;
             margin: 0 auto;
-            padding: 50px 20px;
+            padding: 40px 24px;
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+
+        /* Container de cada Seção (Enquadramento Visual Aprimorado) */
+        .section-wrapper {
+            background-color: rgba(25, 29, 36, 0.6);
+            border: 1px solid var(--pmesp-border);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .section-wrapper:hover {
+            border-color: rgba(200, 16, 46, 0.4);
         }
 
         .section-title {
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--pmesp-white);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
+            letter-spacing: 1.2px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
             border-bottom: 2px solid var(--pmesp-red);
-        }
-
-        .section-title:first-child {
-            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
         }
 
         .card {
             background-color: var(--pmesp-card-bg);
             border: 1px solid var(--pmesp-border);
             border-left: 4px solid var(--pmesp-red);
-            border-radius: 6px;
-            padding: 28px;
+            border-radius: 8px;
+            padding: 24px;
             color: inherit;
             display: flex;
             flex-direction: column;
@@ -150,47 +169,55 @@
             position: relative;
             overflow: hidden;
             text-decoration: none;
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        a.card:hover {
+            background-color: var(--pmesp-card-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
 
         .card-header {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .icon-box {
-            width: 48px;
-            height: 48px;
-            background-color: rgba(255, 255, 255, 0.05);
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.04);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .icon-box svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             fill: var(--pmesp-white);
         }
 
         .card-tag {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 4px 8px;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
             border-radius: 4px;
             color: var(--pmesp-light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .card-body h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             margin-bottom: 8px;
             color: var(--pmesp-white);
         }
@@ -198,88 +225,99 @@
         .card-body p {
             font-size: 0.85rem;
             color: var(--pmesp-light-gray);
-            line-height: 1.4;
-            margin-bottom: 20px;
+            line-height: 1.5;
+            margin-bottom: 18px;
         }
 
         /* Formularios e Botões */
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--pmesp-light-gray);
             margin-bottom: 6px;
             font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 10px 12px;
-            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px 14px;
+            background-color: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--pmesp-border);
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--pmesp-white);
             font-size: 0.9rem;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         .form-group textarea {
             resize: vertical;
-            min-height: 70px;
+            min-height: 75px;
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             border-color: var(--pmesp-red);
+            box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.2);
         }
 
         .btn-submit {
             background-color: var(--pmesp-red);
             color: var(--pmesp-white);
             border: none;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 11px;
+            border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
             width: 100%;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: background 0.2s;
-            margin-bottom: 10px;
+            font-size: 0.85rem;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 5px;
         }
 
         .btn-submit:hover {
-            background-color: #a00c24;
+            background-color: var(--pmesp-red-hover);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
         }
 
         .btn-secondary {
-            background-color: #3a414e;
+            background-color: #2d3542;
             color: var(--pmesp-white);
             border: none;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 11px;
+            border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
             font-size: 0.8rem;
             text-transform: uppercase;
-            transition: background 0.2s;
+            letter-spacing: 0.5px;
+            transition: background-color 0.2s;
+            margin-top: 8px;
         }
 
         .btn-secondary:hover {
-            background-color: #4e5768;
+            background-color: #384252;
         }
 
         .counter-box {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.3);
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-top: 15px;
             font-size: 0.85rem;
             border: 1px dashed var(--pmesp-border);
             text-align: center;
+            color: var(--pmesp-light-gray);
         }
 
         .counter-box span {
@@ -292,24 +330,26 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background-color: var(--pmesp-card-bg);
             border: 1px solid var(--pmesp-border);
             border-top: 4px solid var(--pmesp-red);
-            padding: 25px;
-            border-radius: 6px;
+            padding: 30px;
+            border-radius: 8px;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             max-height: 85vh;
             overflow-y: auto;
             position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .modal-header {
@@ -318,20 +358,26 @@
             align-items: center;
             margin-bottom: 20px;
             border-bottom: 1px solid var(--pmesp-border);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
         }
 
         .modal-header h3 {
             font-size: 1.1rem;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .close-modal {
             background: none;
             border: none;
-            color: var(--pmesp-white);
+            color: var(--pmesp-light-gray);
             font-size: 1.5rem;
             cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--pmesp-white);
         }
 
         .table-responsive {
@@ -347,25 +393,29 @@
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px 10px;
             border-bottom: 1px solid var(--pmesp-border);
         }
 
         th {
             color: var(--pmesp-light-gray);
             background-color: rgba(0,0,0,0.2);
+            font-weight: 600;
         }
 
         .action-btns button {
             background: none;
             border: none;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 5px 10px;
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 600;
             margin-right: 4px;
+            transition: opacity 0.2s;
         }
+
+        .action-btns button:hover { opacity: 0.85; }
 
         .btn-view { background-color: #2e86de; color: white; }
         .btn-edit { background-color: #f39c12; color: white; }
@@ -375,18 +425,20 @@
         footer {
             text-align: center;
             padding: 25px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--pmesp-light-gray);
             border-top: 1px solid var(--pmesp-border);
             background-color: var(--pmesp-black);
+            letter-spacing: 0.5px;
         }
 
-        @media (max-width: 600px) {
-            header { padding: 12px 15px; gap: 10px; }
-            .brasao-img { height: 48px; }
-            .header-titles h1 { font-size: 0.85rem; }
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; gap: 10px; }
+            .brasao-img { height: 50px; }
+            .header-titles h1 { font-size: 0.9rem; }
             .header-titles p { font-size: 0.75rem; }
-            main { padding: 25px 15px; }
+            main { padding: 20px 15px; gap: 20px; }
+            .section-wrapper { padding: 18px; }
         }
     </style>
 </head>
@@ -410,293 +462,303 @@
     <!-- Conteúdo Principal -->
     <main>
         <!-- P/1 - Seção de Pessoal -->
-        <h2 class="section-title">P/1 - Seção de Pessoal</h2>
-        <div class="grid-container">
-            <div class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+        <div class="section-wrapper">
+            <h2 class="section-title">P/1 - Seção de Pessoal</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                            </div>
+                            <span class="card-tag">Folga</span>
                         </div>
-                        <span class="card-tag">Folga</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Lançamento de Folgas</h2>
-                        <form id="formFolgas">
-                            <div class="form-group">
-                                <label for="nome">Nome:</label>
-                                <select id="nome" name="nome" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Ten Cel PM Eduardo">Ten Cel PM Eduardo</option>
-                                    <option value="Maj PM Martins Ribeiro">Maj PM Martins Ribeiro</option>
-                                    <option value="Maj PM Luana">Maj PM Luana</option>
-                                    <option value="Cap PM Cravero">Cap PM Cravero</option>
-                                    <option value="Cap PM Del Vecchio">Cap PM Del Vecchio</option>
-                                    <option value="Cap PM André Luís">Cap PM André Luís</option>
-                                    <option value="Ten PM Felipe Carvalho">Ten PM Felipe Carvalho</option>
-                                    <option value="Ten PM Ribeiro">Ten PM Ribeiro</option>
-                                    <option value="Ten PM Feitosa">Ten PM Feitosa</option>
-                                    <option value="Ten PM Natalia">Ten PM Natalia</option>
-                                    <option value="Ten PM Derick">Ten PM Derick</option>
-                                    <option value="Ten PM Chevchuk">Ten PM Chevchuk</option>
-                                    <option value="Ten PM Zanardo">Ten PM Zanardo</option>
-                                    <option value="Ten PM Larissa Muniz">Ten PM Larissa Muniz</option>
-                                    <option value="Ten PM Borgo">Ten PM Borgo</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="data_folga">Data Desejada:</label>
-                                <input type="date" id="data_folga" name="data_folga" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tipo_folga">Tipo de Folga:</label>
-                                <select id="tipo_folga" name="tipo_folga" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="Mensal">Mensal</option>
-                                    <option value="Produtividade">Produtividade</option>
-                                    <option value="Horas Passadas">Horas Passadas</option>                                    
-                                    <option value="Concessão">Concessão</option>
-                                    <option value="Semanal">Semanal</option>
-                                    <option value="Meio Expediente">Meio Expediente</option>
-                                    <option value="Outra">Outra</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="especifique">Especifique:</label>
-                                <input type="text" id="especifique" name="especifique">
-                            </div>
-                            <button type="submit" class="btn-submit" id="btnFolgas">Enviar Folga</button>
-                        </form>
+                        <div class="card-body">
+                            <h2>Lançamento de Folgas</h2>
+                            <form id="formFolgas">
+                                <div class="form-group">
+                                    <label for="nome">Nome:</label>
+                                    <select id="nome" name="nome" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="Ten Cel PM Eduardo">Ten Cel PM Eduardo</option>
+                                        <option value="Maj PM Martins Ribeiro">Maj PM Martins Ribeiro</option>
+                                        <option value="Maj PM Luana">Maj PM Luana</option>
+                                        <option value="Cap PM Cravero">Cap PM Cravero</option>
+                                        <option value="Cap PM Del Vecchio">Cap PM Del Vecchio</option>
+                                        <option value="Cap PM André Luís">Cap PM André Luís</option>
+                                        <option value="Ten PM Felipe Carvalho">Ten PM Felipe Carvalho</option>
+                                        <option value="Ten PM Ribeiro">Ten PM Ribeiro</option>
+                                        <option value="Ten PM Feitosa">Ten PM Feitosa</option>
+                                        <option value="Ten PM Natalia">Ten PM Natalia</option>
+                                        <option value="Ten PM Derick">Ten PM Derick</option>
+                                        <option value="Ten PM Chevchuk">Ten PM Chevchuk</option>
+                                        <option value="Ten PM Zanardo">Ten PM Zanardo</option>
+                                        <option value="Ten PM Larissa Muniz">Ten PM Larissa Muniz</option>
+                                        <option value="Ten PM Borgo">Ten PM Borgo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="data_folga">Data Desejada:</label>
+                                    <input type="date" id="data_folga" name="data_folga" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipo_folga">Tipo de Folga:</label>
+                                    <select id="tipo_folga" name="tipo_folga" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="Mensal">Mensal</option>
+                                        <option value="Produtividade">Produtividade</option>
+                                        <option value="Horas Passadas">Horas Passadas</option>                                    
+                                        <option value="Concessão">Concessão</option>
+                                        <option value="Semanal">Semanal</option>
+                                        <option value="Meio Expediente">Meio Expediente</option>
+                                        <option value="Outra">Outra</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="especifique">Especifique:</label>
+                                    <input type="text" id="especifique" name="especifique">
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnFolgas">Enviar Folga</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
+                <a href="https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
+                            </div>
+                            <span class="card-tag">Escala</span>
+                        </div>
+                        <div class="card-body">
+                            <h2>Calendário de Folgas</h2>
+                            <p>Consulte a agenda oficial do Batalhão com a programação das folgas dos Oficiais.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            </div>
+                            <span class="card-tag">Pessoal</span>
+                        </div>
+                        <div class="card-body">
+                            <h2>Efetivo</h2>
+                            <p>Escalas de serviço, controle de pessoal, presença e atribuições da tropa.</p>
+                        </div>
+                    </div>
+                </a>
             </div>
-
-            <a href="https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
-                        </div>
-                        <span class="card-tag">Escala</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Calendário de Folgas</h2>
-                        <p>Consulte a agenda oficial do Batalhão com a programação das folgas dos Oficiais.</p>
-                    </div>
-                </div>
-            </a>
-
-            <a href="https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                        </div>
-                        <span class="card-tag">Pessoal</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Efetivo</h2>
-                        <p>Escalas de serviço, controle de pessoal, presença e atribuições da tropa.</p>
-                    </div>
-                </div>
-            </a>
         </div>
 
         <!-- P/3 - Seção de Operações -->
-        <h2 class="section-title">P/3 - Seção de Operações</h2>
-        <div class="grid-container">
-            <div class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
-                            </svg>
+        <div class="section-wrapper">
+            <h2 class="section-title">P/3 - Seção de Operações</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                                </svg>
+                            </div>
+                            <span class="card-tag">Operacional</span>
                         </div>
-                        <span class="card-tag">Operacional</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Agendar Operação</h2>
-                        <form id="formOperacoes">
-                            <div class="form-group">
-                                <label for="data_inicio">Data Início:</label>
-                                <input type="date" id="data_inicio" name="data_inicio" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="data_termino">Data Término:</label>
-                                <input type="date" id="data_termino" name="data_termino" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nome_operacao">Nome da Operação:</label>
-                                <input type="text" id="nome_operacao" name="nome_operacao" required placeholder="Ex: Operação Impacto">
-                            </div>
-                            <div class="form-group">
-                                <label for="descricao_operacao">Descrição:</label>
-                                <textarea id="descricao_operacao" name="descricao_operacao" placeholder="Detalhamento da operação..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-submit" id="btnOperacoes">Criar Operação</button>
-                        </form>
+                        <div class="card-body">
+                            <h2>Agendar Operação</h2>
+                            <form id="formOperacoes">
+                                <div class="form-group">
+                                    <label for="data_inicio">Data Início:</label>
+                                    <input type="date" id="data_inicio" name="data_inicio" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="data_termino">Data Término:</label>
+                                    <input type="date" id="data_termino" name="data_termino" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nome_operacao">Nome da Operação:</label>
+                                    <input type="text" id="nome_operacao" name="nome_operacao" required placeholder="Ex: Operação Impacto">
+                                </div>
+                                <div class="form-group">
+                                    <label for="descricao_operacao">Descrição:</label>
+                                    <textarea id="descricao_operacao" name="descricao_operacao" placeholder="Detalhamento da operação..."></textarea>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnOperacoes">Criar Operação</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <a href="https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
-                            </svg>
+                <a href="https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
+                                </svg>
+                            </div>
+                            <span class="card-tag">Escala</span>
                         </div>
-                        <span class="card-tag">Escala</span>
+                        <div class="card-body">
+                            <h2>Calendário de Operações</h2>
+                            <p>Consulte a agenda oficial do Batalhão com a programação das Operações.</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h2>Calendário de Operações</h2>
-                        <p>Consulte a agenda oficial do Batalhão com a programação das Operações.</p>
-                    </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
 
         <!-- P/4 - Seção de Logística -->
-        <h2 class="section-title">P/4 - Seção de Logística</h2>
-        <div class="grid-container">
-            <a href="https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                            </svg>
+        <div class="section-wrapper">
+            <h2 class="section-title">P/4 - Seção de Logística</h2>
+            <div class="grid-container">
+                <a href="https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                </svg>
+                            </div>
+                            <span class="card-tag">Frota</span>
                         </div>
-                        <span class="card-tag">Frota</span>
+                        <div class="card-body">
+                            <h2>Viaturas</h2>
+                            <p>Gestão, acompanhamento de frota, manutenção e disponibilidade dos veículos operacionais.</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h2>Viaturas</h2>
-                        <p>Gestão, acompanhamento de frota, manutenção e disponibilidade dos veículos operacionais.</p>
-                    </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
 
         <!-- P/5 - Seção de Comunicação Social -->
-        <h2 class="section-title">P/5 - Seção de Comunicação Social</h2>
-        <div class="grid-container">
-            <div class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+        <div class="section-wrapper">
+            <h2 class="section-title">P/5 - Seção de Comunicação Social</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                            </div>
+                            <span class="card-tag">Eventos</span>
                         </div>
-                        <span class="card-tag">Eventos</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Agendar Solenidade/Evento</h2>
-                        <form id="formSolenidades">
-                            <div class="form-group">
-                                <label for="data_evento">Data do Evento:</label>
-                                <input type="date" id="data_evento" name="data_evento" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nome_evento">Nome da Solenidade / Evento:</label>
-                                <input type="text" id="nome_evento" name="nome_evento" required placeholder="Ex: Passagem de Comando">
-                            </div>
-                            <div class="form-group">
-                                <label for="local_evento">Local:</label>
-                                <input type="text" id="local_evento" name="local_evento" placeholder="Ex: Auditório Principal">
-                            </div>
-                            <div class="form-group">
-                                <label for="descricao_evento">Descrição / Observações:</label>
-                                <textarea id="descricao_evento" name="descricao_evento" placeholder="Detalhes do evento, trajes, convidados..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-submit" id="btnSolenidades">Registrar Evento</button>
-                        </form>
+                        <div class="card-body">
+                            <h2>Agendar Solenidade/Evento</h2>
+                            <form id="formSolenidades">
+                                <div class="form-group">
+                                    <label for="data_evento">Data do Evento:</label>
+                                    <input type="date" id="data_evento" name="data_evento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nome_evento">Nome da Solenidade / Evento:</label>
+                                    <input type="text" id="nome_evento" name="nome_evento" required placeholder="Ex: Passagem de Comando">
+                                </div>
+                                <div class="form-group">
+                                    <label for="local_evento">Local:</label>
+                                    <input type="text" id="local_evento" name="local_evento" placeholder="Ex: Auditório Principal">
+                                </div>
+                                <div class="form-group">
+                                    <label for="descricao_evento">Descrição / Observações:</label>
+                                    <textarea id="descricao_evento" name="descricao_evento" placeholder="Detalhes do evento, trajes, convidados..."></textarea>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnSolenidades">Registrar Evento</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <a href="https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
-                            </svg>
+                <a href="https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
+                                </svg>
+                            </div>
+                            <span class="card-tag">Agenda</span>
                         </div>
-                        <span class="card-tag">Agenda</span>
+                        <div class="card-body">
+                            <h2>Calendário de Solenidades</h2>
+                            <p>Consulte a agenda oficial do Batalhão de Solenidades e Eventos.</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h2>Calendário de Solenidades</h2>
-                        <p>Consulte a agenda oficial do Batalhão de Solenidades e Eventos.</p>
-                    </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
 
         <!-- SPJMD - Seção de Polícia Judiciária Militar e Disciplina -->
-        <h2 class="section-title">SPJMD - Seção de Polícia Judiciária Militar e Disciplina</h2>
-        <div class="grid-container">
-            <div class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        <div class="section-wrapper">
+            <h2 class="section-title">SPJMD - Seção de Polícia Judiciária Militar e Disciplina</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            </div>
+                            <span class="card-tag">Inquérito Policial Militar</span>
                         </div>
-                        <span class="card-tag">Inquérito Policial Militar</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Inquérito Policial Militar - IPM</h2>
-                        <p>Controle de quantidade e cadastro de IPM instaurados.</p>
-                        
-                        <form id="formIPM" style="margin-top: 15px;">
-                            <div class="form-group">
-                                <label for="data_instauracao_ipm">Data de Instauração:</label>
-                                <input type="date" id="data_instauracao_ipm" name="data_instauracao_ipm" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="assunto_ipm">Assunto:</label>
-                                <textarea id="assunto_ipm" name="assunto_ipm" required placeholder="Descreva o assunto do IPM..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-submit" id="btnIPM">Cadastrar IPM</button>
-                        </form>
+                        <div class="card-body">
+                            <h2>Inquérito Policial Militar - IPM</h2>
+                            <p>Controle de quantidade e cadastro de IPM instaurados.</p>
+                            
+                            <form id="formIPM" style="margin-top: 15px;">
+                                <div class="form-group">
+                                    <label for="data_instauracao_ipm">Data de Instauração:</label>
+                                    <input type="date" id="data_instauracao_ipm" name="data_instauracao_ipm" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="assunto_ipm">Assunto:</label>
+                                    <textarea id="assunto_ipm" name="assunto_ipm" required placeholder="Descreva o assunto do IPM..."></textarea>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnIPM">Cadastrar IPM</button>
+                            </form>
 
-                        <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IPM')">Gerenciar / Visualizar IPMs</button>
+                            <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IPM')">Gerenciar / Visualizar IPMs</button>
 
-                        <div class="counter-box">
-                            Total Instaurados: <span id="contadorIPM">0</span>
+                            <div class="counter-box">
+                                Total Instaurados: <span id="contadorIPM">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <div>
-                    <div class="card-header">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                <div class="card">
+                    <div>
+                        <div class="card-header">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            </div>
+                            <span class="card-tag">Inquérito Policial</span>
                         </div>
-                        <span class="card-tag">Inquérito Policial</span>
-                    </div>
-                    <div class="card-body">
-                        <h2>Inquérito Policial - IP</h2>
-                        <p>Controle de quantidade e cadastro de IP instaurados.</p>
-                        
-                        <form id="formIP" style="margin-top: 15px;">
-                            <div class="form-group">
-                                <label for="data_instauracao_ip">Data de Instauração:</label>
-                                <input type="date" id="data_instauracao_ip" name="data_instauracao_ip" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="assunto_ip">Assunto:</label>
-                                <textarea id="assunto_ip" name="assunto_ip" required placeholder="Descreva o assunto do IP..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-submit" id="btnIP">Cadastrar IP</button>
-                        </form>
+                        <div class="card-body">
+                            <h2>Inquérito Policial - IP</h2>
+                            <p>Controle de quantidade e cadastro de IP instaurados.</p>
+                            
+                            <form id="formIP" style="margin-top: 15px;">
+                                <div class="form-group">
+                                    <label for="data_instauracao_ip">Data de Instauração:</label>
+                                    <input type="date" id="data_instauracao_ip" name="data_instauracao_ip" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="assunto_ip">Assunto:</label>
+                                    <textarea id="assunto_ip" name="assunto_ip" required placeholder="Descreva o assunto do IP..."></textarea>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnIP">Cadastrar IP</button>
+                            </form>
 
-                        <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IP')">Gerenciar / Visualizar IPs</button>
+                            <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IP')">Gerenciar / Visualizar IPs</button>
 
-                        <div class="counter-box">
-                            Total Instaurados: <span id="contadorIP">0</span>
+                            <div class="counter-box">
+                                Total Instaurados: <span id="contadorIP">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -749,10 +811,90 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1sZGRwbW1nd2hib3R1dHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTY3MjksImV4cCI6MjEwNjE3MjcyOX0.7d1iqK1Se3luzS6aZI38enGUQHXOXpjwlnyzPNZHAiI';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // COLOQUE AQUI AS URLS DOS SEUS GOOGLE APPS SCRIPTS
+        // URLs dos Google Apps Scripts
         const scriptURLFolgas = 'https://script.google.com/macros/s/AKfycby6MaQTwhw_QePtaJLhhvJzKOxK7nVd8d5wFGhRj6WNh_MoH0YfjpvBoELPaJ8PySzz0g/exec';
         const scriptURLOperacoes = 'https://script.google.com/macros/s/AKfycbwU2bZX56SWM4Sc3hCc8JrAMN2sZz2H-R-7o_vIYRcdqRTduQnvyhuXpLObkvtNOHjv/exec';
         const scriptURLSolenidades = 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec';
+
+        // Lógica de Login e Controle de Seções por Senha (Incluindo Administrador)
+        document.addEventListener("DOMContentLoaded", function() {
+            // Seleciona os blocos de seções completos (.section-wrapper)
+            const secoes = document.querySelectorAll("main .section-wrapper");
+            
+            // Esconde todas as seções inicialmente
+            secoes.forEach(secao => {
+                secao.style.display = "none";
+            });
+
+            // Cria a caixa de diálogo (Modal de Senha)
+            const modalDiv = document.createElement("div");
+            modalDiv.id = "modalLoginSeguranca";
+            modalDiv.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background-color: rgba(11, 13, 16, 0.95); display: flex;
+                justify-content: center; align-items: center; z-index: 99999;
+                backdrop-filter: blur(5px);
+            `;
+            
+            modalDiv.innerHTML = `
+                <div style="background-color: #1e222a; border: 1px solid #2d3542; border-top: 4px solid #c8102e; padding: 35px; border-radius: 10px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+                     <img src="Brasão_3BC.png" alt="Brasão do 3º Batalhão de Caçadores" style="width: 135px; margin-bottom: 20px;">
+                    <h3 style="color: #ffffff; margin-bottom: 12px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px;">Acesso Restrito</h3>
+                    <p style="color: #9ba3af; font-size: 0.85rem; margin-bottom: 18px; line-height: 1.4;">Insira a senha de sua Seção:</p>
+                    <form id="formLoginSecao">
+                        <input type="password" id="senhaSecao" placeholder="Digite sua senha..." required style="width: 100%; padding: 12px 15px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; font-size: 1rem; margin-bottom: 16px; outline: none; text-align: center;">
+                        <button type="submit" style="background-color: #c8102e; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; width: 100%; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: background 0.2s;">Entrar</button>
+                    </form>
+                    <p id="erroLogin" style="color: #c8102e; font-size: 0.8rem; margin-top: 12px; display: none; font-weight: 600;">Senha incorreta. Tente novamente.</p>
+                </div>
+            `;
+            
+            document.body.appendChild(modalDiv);
+
+            // Validação das senhas ao enviar
+            document.getElementById("formLoginSecao").addEventListener("submit", function(e) {
+                e.preventDefault();
+                const senha = document.getElementById("senhaSecao").value;
+
+                // Senha de Administrador (Acesso Total)
+                const senhaAdmin = "9999"; 
+
+                if (senha === senhaAdmin) {
+                    modalDiv.remove();
+                    secoes.forEach(secao => { secao.style.display = "block"; });
+                    return;
+                }
+
+                // Senhas específicas por seção
+                let indiceSecao = -1;
+                if (senha === "123") indiceSecao = 0;      // P/1 - Pessoal
+                else if (senha === "321") indiceSecao = 1; // P/3 - Operações
+                else if (senha === "111") indiceSecao = 2; // P/4 - Logística
+                else if (senha === "222") indiceSecao = 3; // P/5 - Comunicação Social
+                else if (senha === "333") indiceSecao = 4; // SPJMD
+
+                if (indiceSecao !== -1) {
+                    modalDiv.remove();
+                    if (secoes[indiceSecao]) {
+                        secoes[indiceSecao].style.display = "block";
+                    }
+                } else {
+                    document.getElementById("erroLogin").style.display = "block";
+                }
+            });
+        });
+
+        // Função auxiliar para validar a senha da SPJMD ("333") ou Administrador ("9999")
+        function verificarSenhaSPJMD() {
+            const senhaInformada = prompt("Insira a senha da SPJMD para prosseguir:");
+            if (senhaInformada === null) return false; // Usuário cancelou
+            if (senhaInformada === "333" || senhaInformada === "9999") {
+                return true;
+            } else {
+                alert("Senha incorreta! Ação negada.");
+                return false;
+            }
+        }
 
         // Carregar contadores do Supabase
         async function carregarEstatisticas() {
@@ -878,8 +1020,8 @@
                         <td>${item.assunto}</td>
                         <td class="action-btns" style="text-align: center; white-space: nowrap;">
                             <button class="btn-view" onclick="visualizarDetalhes('${item.id}', '${item.tipo}', '${numeracaoCompleta}', '${item.data_instauracao}', \`${item.assunto}\`)">Ver</button>
-                            <button class="btn-edit" onclick="prepararEdicao('${item.id}', '${item.tipo}', ${item.numeracao}, '${item.data_instauracao}', \`${item.assunto}\`)">Editar</button>
-                            <button class="btn-delete" onclick="excluirInquerito('${item.id}', '${item.tipo}')">Excluir</button>
+                            <button class="btn-edit" onclick="prepararEdicaoSegura('${item.id}', '${item.tipo}', ${item.numeracao}, '${item.data_instauracao}', \`${item.assunto}\`)">Editar</button>
+                            <button class="btn-delete" onclick="excluirInqueritoSeguro('${item.id}', '${item.tipo}')">Excluir</button>
                         </td>
                     </tr>
                 `;
@@ -892,6 +1034,11 @@
         function visualizarDetalhes(id, tipo, numeracaoCompleta, data, assunto) {
             const dataF = data ? data.split('-').reverse().join('/') : '';
             alert(`Detalhes do ${tipo}:\n\nNumeração: ${numeracaoCompleta}\nData de Instauração: ${dataF}\nAssunto: ${assunto}`);
+        }
+
+        function prepararEdicaoSegura(id, tipo, numeracao, data, assunto) {
+            if (!verificarSenhaSPJMD()) return;
+            prepararEdicao(id, tipo, numeracao, data, assunto);
         }
 
         function prepararEdicao(id, tipo, numeracao, data, assunto) {
@@ -933,7 +1080,8 @@
             }
         });
 
-        async function excluirInquerito(id, tipo) {
+        async function excluirInqueritoSeguro(id, tipo) {
+            if (!verificarSenhaSPJMD()) return;
             if (confirm('Tem certeza que deseja excluir este inquérito?')) {
                 const { error } = await supabaseClient
                     .from('inqueritos_pm')
@@ -1012,7 +1160,7 @@
             });
         });
 
-// Envio de Solenidades
+        // Envio de Solenidades
         const formSolenidades = document.getElementById('formSolenidades');
         const btnSolenidades = document.getElementById('btnSolenidades');
 
@@ -1022,7 +1170,7 @@
             btnSolenidades.innerText = 'Registrando...';
 
             const formData = new URLSearchParams({
-                acao: 'solenidade', // <--- ADICIONADO AQUI
+                acao: 'solenidade',
                 data_evento: document.getElementById('data_evento').value,
                 nome_evento: document.getElementById('nome_evento').value,
                 local_evento: document.getElementById('local_evento').value,
