@@ -1,1283 +1,415 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão EM - 3º B.C.</title>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --pmesp-black: #0b0d10;
-            --pmesp-dark-gray: #15181e;
-            --pmesp-card-bg: #1e222a;
-            --pmesp-card-hover: #262c36;
-            --pmesp-red: #c8102e;
-            --pmesp-red-hover: #e61234;
-            --pmesp-white: #ffffff;
-            --pmesp-light-gray: #9ba3af;
-            --pmesp-border: #2d3542;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--pmesp-dark-gray);
-            color: var(--pmesp-white);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 100vh;
-        }
-
-        /* Top Bar / Header */
-        header {
-            background-color: var(--pmesp-black);
-            border-bottom: 3px solid var(--pmesp-red);
-            padding: 24px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            gap: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            min-width: 0;
-        }
-
-        .brasao-img {
-            height: 75px;
-            width: auto;
-            object-fit: contain;
-            flex-shrink: 0;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-        }
-
-        .header-titles {
-            min-width: 0;
-        }
-
-        .header-titles h1 {
-            font-size: 1.4rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            font-weight: 700;
-            color: var(--pmesp-white);
-            line-height: 1.2;
-        }
-
-        .header-titles p {
-            font-size: 0.95rem;
-            color: var(--pmesp-light-gray);
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-shrink: 0;
-        }
-
-        .badge-status {
-            background-color: rgba(200, 16, 46, 0.12);
-            border: 1px solid rgba(200, 16, 46, 0.4);
-            color: #4dff4d;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #2ed573;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #2ed573;
-        }
-
-        .btn-logout {
-            background-color: transparent;
-            border: 1px solid var(--pmesp-red);
-            color: var(--pmesp-white);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-
-        .btn-logout:hover {
-            background-color: var(--pmesp-red);
-        }
-
-        /* Main Container & Layout Reenquadrado */
-        main {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 40px 24px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 35px;
-        }
-
-        /* Container de cada Seção (Enquadramento Visual Aprimorado) */
-        .section-wrapper {
-            background-color: rgba(25, 29, 36, 0.6);
-            border: 1px solid var(--pmesp-border);
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .section-wrapper:hover {
-            border-color: rgba(200, 16, 46, 0.4);
-        }
-
-        .section-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--pmesp-white);
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--pmesp-red);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 24px;
-        }
-
-        .card {
-            background-color: var(--pmesp-card-bg);
-            border: 1px solid var(--pmesp-border);
-            border-left: 4px solid var(--pmesp-red);
-            border-radius: 8px;
-            padding: 24px;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        a.card:hover {
-            background-color: var(--pmesp-card-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .icon-box {
-            width: 44px;
-            height: 44px;
-            background-color: rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .icon-box svg {
-            width: 22px;
-            height: 22px;
-            fill: var(--pmesp-white);
-        }
-
-        .card-tag {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background-color: rgba(0, 0, 0, 0.4);
-            padding: 5px 10px;
-            border-radius: 4px;
-            color: var(--pmesp-light-gray);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .card-body h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            margin-bottom: 8px;
-            color: var(--pmesp-white);
-        }
-
-        .card-body p {
-            font-size: 0.85rem;
-            color: var(--pmesp-light-gray);
-            line-height: 1.5;
-            margin-bottom: 18px;
-        }
-
-        /* Formularios e Botões */
-        .form-group {
-            margin-bottom: 14px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--pmesp-light-gray);
-            margin-bottom: 6px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 10px 14px;
-            background-color: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--pmesp-border);
-            border-radius: 6px;
-            color: var(--pmesp-white);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 75px;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--pmesp-red);
-            box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.2);
-        }
-
-        .btn-submit {
-            background-color: var(--pmesp-red);
-            color: var(--pmesp-white);
-            border: none;
-            padding: 11px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            transition: background-color 0.2s, transform 0.1s;
-            margin-top: 5px;
-        }
-
-        .btn-submit:hover {
-            background-color: var(--pmesp-red-hover);
-        }
-
-        .btn-submit:active {
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background-color: #2d3542;
-            color: var(--pmesp-white);
-            border: none;
-            padding: 11px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background-color 0.2s;
-            margin-top: 8px;
-        }
-
-        .btn-secondary:hover {
-            background-color: #384252;
-        }
-
-        .counter-box {
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-size: 0.85rem;
-            border: 1px dashed var(--pmesp-border);
-            text-align: center;
-            color: var(--pmesp-light-gray);
-        }
-
-        .counter-box span {
-            color: #2ed573;
-            font-weight: 700;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-content {
-            background-color: var(--pmesp-card-bg);
-            border: 1px solid var(--pmesp-border);
-            border-top: 4px solid var(--pmesp-red);
-            padding: 30px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 650px;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--pmesp-border);
-            padding-bottom: 12px;
-        }
-
-        .modal-header h3 {
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: var(--pmesp-light-gray);
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .close-modal:hover {
-            color: var(--pmesp-white);
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 12px 10px;
-            border-bottom: 1px solid var(--pmesp-border);
-        }
-
-        th {
-            color: var(--pmesp-light-gray);
-            background-color: rgba(0,0,0,0.2);
-            font-weight: 600;
-        }
-
-        .action-btns button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-right: 4px;
-            transition: opacity 0.2s;
-        }
-
-        .action-btns button:hover { opacity: 0.85; }
-
-        .btn-view { background-color: #2e86de; color: white; }
-        .btn-edit { background-color: #f39c12; color: white; }
-        .btn-delete { background-color: #c8102e; color: white; }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 25px;
-            font-size: 0.85rem;
-            color: var(--pmesp-light-gray);
-            border-top: 1px solid var(--pmesp-border);
-            background-color: var(--pmesp-black);
-            letter-spacing: 0.5px;
-        }
-
-        @media (max-width: 768px) {
-            header { padding: 15px 20px; gap: 10px; flex-direction: column; align-items: flex-start; }
-            .header-actions { width: 100%; justify-content: space-between; }
-            .brasao-img { height: 50px; }
-            .header-titles h1 { font-size: 0.9rem; }
-            .header-titles p { font-size: 0.75rem; }
-            main { padding: 20px 15px; gap: 20px; }
-            .section-wrapper { padding: 18px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<title>Gestão EM - 3º B.C.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0f1216;--panel:#171b21;--linha:#262c35;--txt:#e9ecf1;--mut:#8b94a3;--red:#c8102e;--red2:#e0203f;--ok:#2ed573}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:12px 28px;background:#0b0d10;border-bottom:2px solid var(--red)}
+header img{height:44px}
+header .marca{flex:1;line-height:1.25}
+header b{font-size:1rem}
+header small{display:block;color:var(--mut)}
+#usuario{color:var(--mut);font-size:.8rem}
+nav{display:flex;gap:4px;padding:0 28px;border-bottom:1px solid var(--linha);overflow-x:auto}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);padding:14px 16px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button[aria-current=true]{color:var(--txt);border-color:var(--red)}
+main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:32px 28px}
+h1{font-size:1.3rem;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--linha);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.card h2{font-size:1rem}
+a.card{color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--red)}
+a.card p{color:var(--mut);font-size:.875rem}
+label{display:flex;flex-direction:column;gap:6px;font-size:.8rem;color:var(--mut);font-weight:600}
+input,select,textarea{font:inherit;color:var(--txt);background:var(--bg);border:1px solid var(--linha);border-radius:6px;padding:10px 12px}
+textarea{min-height:80px;resize:vertical}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.btn{background:var(--red);color:#fff;border:0;border-radius:6px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--red2)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:none;border:1px solid var(--linha);color:var(--txt)}
+.btn.ghost:hover{border-color:var(--mut)}
+.cont{color:var(--mut);font-size:.85rem}
+.acoes{display:flex;gap:10px;justify-content:flex-end}
+dialog{margin:auto;background:var(--panel);color:var(--txt);border:1px solid var(--linha);border-top:3px solid var(--red);border-radius:8px;padding:24px;width:min(720px,94vw);max-height:88vh}
+dialog::backdrop{background:rgba(0,0,0,.75)}
+dialog form,.col{display:flex;flex-direction:column;gap:14px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.tw{overflow:auto;margin-top:14px;max-height:55vh}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:10px;border-bottom:1px solid var(--linha);text-align:left;vertical-align:top}
+th{color:var(--mut);font-weight:600}
+td.nw{white-space:nowrap}
+.mini{background:none;border:1px solid var(--linha);color:var(--txt);border-radius:4px;padding:4px 10px;cursor:pointer;font:inherit;font-size:.78rem}
+.mini:hover{border-color:var(--mut)}
+.mini.perigo:hover{border-color:var(--red);color:#ff6b81}
+.overlay{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;padding:20px}
+.overlay[hidden]{display:none}
+.overlay .card{width:min(400px,100%);text-align:center}
+.overlay img{width:96px;margin:0 auto}
+.msg-erro{color:#ff6b81;font-size:.85rem}
+#toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:8px;z-index:100}
+.toast{background:#1f2a33;border-left:3px solid var(--ok);padding:12px 16px;border-radius:6px;font-size:.875rem;max-width:340px}
+.toast.erro{border-color:var(--red)}
+footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
+@media (max-width:600px){header,nav{padding-inline:16px}main{padding:24px 16px}}
+</style>
 </head>
 <body>
 
-    <!-- Header / Barra Superior -->
-    <header>
-        <div class="header-brand">
-            <img src="Brasão_3BC.png" alt="Brasão do 3º Batalhão de Caçadores" class="brasao-img">
-            <div class="header-titles">
-                <h1>Polícia Militar do Estado de São Paulo</h1>
-                <p>Painel de Gestão - 3º Batalhão de Caçadores</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <div class="badge-status">
-                <span class="status-dot"></span>
-                Sistema Ativo
-            </div>
-            <button id="btnLogout" class="btn-logout" style="display: none;">Sair</button>
-        </div>
-    </header>
-
-    <!-- Conteúdo Principal -->
-    <main>
-        <!-- P/1 - Seção de Pessoal -->
-        <div class="section-wrapper">
-            <h2 class="section-title">P/1 - Seção de Pessoal</h2>
-            <div class="grid-container">
-                <div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
-                            </div>
-                            <span class="card-tag">Folgas</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Agendar Folga</h2>
-                            <form id="formFolgas">
-                                <div class="form-group">
-                                    <label for="nome">Nome:</label>
-                                    <select id="nome" name="nome" required>
-                                        <option value="">Selecione</option>
-                                        <option value="Ten Cel PM Eduardo">Ten Cel PM Eduardo</option>
-                                        <option value="Maj PM Martins Ribeiro">Maj PM Martins Ribeiro</option>
-                                        <option value="Maj PM Luana">Maj PM Luana</option>
-                                        <option value="Cap PM Cravero">Cap PM Cravero</option>
-                                        <option value="Cap PM Del Vecchio">Cap PM Del Vecchio</option>
-                                        <option value="Cap PM André Luís">Cap PM André Luís</option>
-                                        <option value="Ten PM Felipe Carvalho">Ten PM Felipe Carvalho</option>
-                                        <option value="Ten PM Ribeiro">Ten PM Ribeiro</option>
-                                        <option value="Ten PM Feitosa">Ten PM Feitosa</option>
-                                        <option value="Ten PM Natalia">Ten PM Natalia</option>
-                                        <option value="Ten PM Derick">Ten PM Derick</option>
-                                        <option value="Ten PM Chevchuk">Ten PM Chevchuk</option>
-                                        <option value="Ten PM Zanardo">Ten PM Zanardo</option>
-                                        <option value="Ten PM Larissa Muniz">Ten PM Larissa Muniz</option>
-                                        <option value="Ten PM Borgo">Ten PM Borgo</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="data_folga">Data Desejada:</label>
-                                    <input type="date" id="data_folga" name="data_folga" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="tipo_folga">Tipo de Folga:</label>
-                                    <select id="tipo_folga" name="tipo_folga" required>
-                                        <option value="">Selecione</option>
-                                        <option value="Mensal">Mensal</option>
-                                        <option value="Produtividade">Produtividade</option>
-                                        <option value="Horas Passadas">Horas Passadas</option>                                    
-                                        <option value="Concessão">Concessão</option>
-                                        <option value="Semanal">Semanal</option>
-                                        <option value="Meio Expediente">Meio Expediente</option>
-                                        <option value="Outra">Outra</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="especifique">Especifique:</label>
-                                    <input type="text" id="especifique" name="especifique">
-                                </div>
-                                <button type="submit" class="btn-submit" id="btnFolgas">Enviar Folga</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
-                            </div>
-                            <span class="card-tag">Calendário de Folgas</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Calendário de Folgas</h2>
-                            <p>Consulte o calendário de folgas programadas dos Oficiais do Batalhão.</p>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                            </div>
-                            <span class="card-tag">Controle de Efetivo</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Efetivo</h2>
-                            <p>Controle de pessoal e atribuições da tropa.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- P/3 - Seção de Operações -->
-        <div class="section-wrapper">
-            <h2 class="section-title">P/3 - Seção de Operações</h2>
-            <div class="grid-container">
-                <div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
-                                </svg>
-                            </div>
-                            <span class="card-tag">Operações 3º B.C.</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Agendar Operação</h2>
-                            <form id="formOperacoes">
-                                <div class="form-group">
-                                    <label for="data_inicio">Data Início:</label>
-                                    <input type="date" id="data_inicio" name="data_inicio" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="data_termino">Data Término:</label>
-                                    <input type="date" id="data_termino" name="data_termino" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="nome_operacao">Nome da Operação:</label>
-                                    <input type="text" id="nome_operacao" name="nome_operacao" required placeholder="Ex: Operação Impacto">
-                                </div>
-                                <div class="form-group">
-                                    <label for="descricao_operacao">Descrição:</label>
-                                    <textarea id="descricao_operacao" name="descricao_operacao" placeholder="Detalhamento da Operação"></textarea>
-                                </div>
-                                <button type="submit" class="btn-submit" id="btnOperacoes">Criar Operação</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
-                                </svg>
-                            </div>
-                            <span class="card-tag">Calendário de Operações</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Calendário de Operações</h2>
-                            <p>Consulte a agenda oficial do Batalhão com a programação das Operações.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- P/4 - Seção de Logística -->
-        <div class="section-wrapper">
-            <h2 class="section-title">P/4 - Seção de Logística</h2>
-            <div class="grid-container">
-                <a href="https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                                </svg>
-                            </div>
-                            <span class="card-tag">Controle de Frota</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Viaturas</h2>
-                            <p>Gestão de frota, manutenção e disponibilidade dos veículos oficiais.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- P/5 - Seção de Comunicação Social -->
-        <div class="section-wrapper">
-            <h2 class="section-title">P/5 - Seção de Comunicação Social</h2>
-            <div class="grid-container">
-                <div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
-                            </div>
-                            <span class="card-tag">Eventos</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Agendar Solenidade/Evento</h2>
-                            <form id="formSolenidades">
-                                <div class="form-group">
-                                    <label for="data_evento">Data do Evento:</label>
-                                    <input type="date" id="data_evento" name="data_evento" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="nome_evento">Nome da Solenidade / Evento:</label>
-                                    <input type="text" id="nome_evento" name="nome_evento" required placeholder="Ex: Passagem de Comando">
-                                </div>
-                                <div class="form-group">
-                                    <label for="local_evento">Local:</label>
-                                    <input type="text" id="local_evento" name="local_evento" placeholder="Ex: Escreva o local do evento/solenidade">
-                                </div>
-                                <div class="form-group">
-                                    <label for="descricao_evento">Descrição / Observações:</label>
-                                    <textarea id="descricao_evento" name="descricao_evento" placeholder="Detalhes sobre o evento"></textarea>
-                                </div>
-                                <button type="submit" class="btn-submit" id="btnSolenidades">Registrar Evento</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank" rel="noopener noreferrer" class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
-                                </svg>
-                            </div>
-                            <span class="card-tag">Calendário de Eventos/Solenidades</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Calendário de Solenidades</h2>
-                            <p>Consulte o calendário de Solenidades e Eventos do Batalhão.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- SPJMD - Seção de Polícia Judiciária Militar e Disciplina -->
-        <div class="section-wrapper">
-            <h2 class="section-title">SPJMD - Seção de Polícia Judiciária Militar e Disciplina</h2>
-            <div class="grid-container">
-                <div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                            </div>
-                            <span class="card-tag">Inquérito Policial Militar</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Inquérito Policial Militar - IPM</h2>
-                            <p>Controle quantitativo e cadastro de IPM instaurados.</p>
-                            
-                            <form id="formIPM" style="margin-top: 15px;">
-                                <div class="form-group">
-                                    <label for="data_instauracao_ipm">Data de Instauração:</label>
-                                    <input type="date" id="data_instauracao_ipm" name="data_instauracao_ipm" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="assunto_ipm">Assunto:</label>
-                                    <textarea id="assunto_ipm" name="assunto_ipm" required placeholder="Descreva o assunto do IPM"></textarea>
-                                </div>
-                                <button type="submit" class="btn-submit" id="btnIPM">Cadastrar IPM</button>
-                            </form>
-
-                            <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IPM')">Gerenciar / Visualizar IPM Instaurados</button>
-
-                            <div class="counter-box">
-                                Total Instaurados: <span id="contadorIPM">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="icon-box">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                            </div>
-                            <span class="card-tag">Inquérito Policial</span>
-                        </div>
-                        <div class="card-body">
-                            <h2>Inquérito Policial - IP</h2>
-                            <p>Controle quantitativo e cadastro de IP instaurados.</p>
-                            
-                            <form id="formIP" style="margin-top: 15px;">
-                                <div class="form-group">
-                                    <label for="data_instauracao_ip">Data de Instauração:</label>
-                                    <input type="date" id="data_instauracao_ip" name="data_instauracao_ip" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="assunto_ip">Assunto:</label>
-                                    <textarea id="assunto_ip" name="assunto_ip" required placeholder="Descreva o assunto do IP"></textarea>
-                                </div>
-                                <button type="submit" class="btn-submit" id="btnIP">Cadastrar IP</button>
-                            </form>
-
-                            <button type="button" class="btn-secondary" onclick="abrirGestaoInqueritos('IP')">Gerenciar / Visualizar IP Instauradas</button>
-
-                            <div class="counter-box">
-                                Total Instaurados: <span id="contadorIP">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal de Gestão -->
-    <div class="modal-overlay" id="modalGestao">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitulo">Gerenciar Inquéritos</h3>
-                <button class="close-modal" onclick="fecharModal()">&times;</button>
-            </div>
-            
-            <div id="tabelaContainer" class="table-responsive"></div>
-
-            <div id="formEdicaoContainer" style="display: none; margin-top: 15px;">
-                <h4 style="margin-bottom: 10px; font-size: 0.95rem; color: #f39c12;">Editar Inquérito</h4>
-                <form id="formEdicao">
-                    <input type="hidden" id="edit_id">
-                    <input type="hidden" id="edit_tipo">
-                    <div class="form-group">
-                        <label for="edit_numeracao">Numeração (xxx):</label>
-                        <input type="number" id="edit_numeracao" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_data">Data de Instauração:</label>
-                        <input type="date" id="edit_data" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_assunto">Assunto:</label>
-                        <textarea id="edit_assunto" required></textarea>
-                    </div>
-                    <button type="submit" class="btn-submit" style="background-color: #f39c12;">Salvar Alterações</button>
-                    <button type="button" class="btn-secondary" onclick="voltarParaTabela()">Cancelar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Rodapé -->
-    <footer>
-        <p>Uso Restrito 3º Batalhão de Caçadores &bull; Desenvolvido para Gestão do E.M.</p>
-    </footer>
-
-    <script>
-        // Configuração do Supabase
-        const SUPABASE_URL = 'https://xxzmlddpmmgwhbotutsj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1sZGRwbW1nd2hib3R1dHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTY3MjksImV4cCI6MjEwNjE3MjcyOX0.7d1iqK1Se3luzS6aZI38enGUQHXOXpjwlnyzPNZHAiI';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // URLs dos Google Apps Scripts
-        const scriptURLFolgas = 'https://script.google.com/macros/s/AKfycby6MaQTwhw_QePtaJLhhvJzKOxK7nVd8d5wFGhRj6WNh_MoH0YfjpvBoELPaJ8PySzz0g/exec';
-        const scriptURLOperacoes = 'https://script.google.com/macros/s/AKfycbwU2bZX56SWM4Sc3hCc8JrAMN2sZz2H-R-7o_vIYRcdqRTduQnvyhuXpLObkvtNOHjv/exec';
-        const scriptURLSolenidades = 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec';
-
-        // Lógica de Login e Controle de Seções por Supabase Auth
-        document.addEventListener("DOMContentLoaded", function() {
-            const secoes = document.querySelectorAll("main .section-wrapper");
-            
-            // Esconde todas as seções inicialmente
-            secoes.forEach(secao => { secao.style.display = "none"; });
-
-            // Configura o evento do botão de Logout
-            document.getElementById("btnLogout").addEventListener("click", async function() {
-                await supabaseClient.auth.signOut();
-                location.reload(); // Recarrega a página para limpar o estado e exibir o modal novamente
-            });
-
-            // Verifica se já existe uma sessão ativa (para não precisar logar a toda hora)
-            supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                if (session) {
-                    liberarAcessosPorEmail(session.user.email, secoes);
-                } else {
-                    criarModalLogin(secoes);
-                }
-            });
-        });
-
-        function criarModalLogin(secoes) {
-            // Remove modal anterior se existir para evitar duplicações
-            const modalAntigo = document.getElementById("modalLoginSeguranca");
-            if (modalAntigo) modalAntigo.remove();
-
-            const modalDiv = document.createElement("div");
-            modalDiv.id = "modalLoginSeguranca";
-            modalDiv.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background-color: rgba(11, 13, 16, 0.95); display: flex;
-                justify-content: center; align-items: center; z-index: 99999;
-                backdrop-filter: blur(5px);
-            `;
-            
-            modalDiv.innerHTML = `
-                <div style="background-color: #1e222a; border: 1px solid #2d3542; border-top: 4px solid #c8102e; padding: 35px; border-radius: 10px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-                    <img src="Brasão_3BC.png" alt="Brasão do 3º Batalhão de Caçadores" style="width: 120px; margin-bottom: 20px;">
-                    <h3 style="color: #ffffff; margin-bottom: 12px; font-size: 1.25rem; text-transform: uppercase;">Acesso Restrito</h3>
-                    <p style="color: #9ba3af; font-size: 0.85rem; margin-bottom: 18px;">Acesse com e-mail de sua Seção:</p>
-                    <form id="formLoginSecao">
-                        <input type="email" id="emailSecao" placeholder="exemplo@policiamilitar.sp.gov.br" required style="width: 100%; padding: 12px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; margin-bottom: 12px; outline: none;">
-                        <input type="password" id="senhaSecao" placeholder="Senha" required style="width: 100%; padding: 12px; background-color: rgba(0,0,0,0.3); border: 1px solid #2d3542; border-radius: 6px; color: #fff; margin-bottom: 16px; outline: none;">
-                        <button type="submit" id="btnLoginSubmit" style="background-color: #c8102e; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; width: 100%; text-transform: uppercase; cursor: pointer;">Entrar</button>
-                    </form>
-                    <p id="erroLogin" style="color: #c8102e; font-size: 0.8rem; margin-top: 12px; display: none; font-weight: 600;">E-mail ou senha incorretos.</p>
-                </div>
-            `;
-            
-            document.body.appendChild(modalDiv);
-
-            document.getElementById("formLoginSecao").addEventListener("submit", async function(e) {
-                e.preventDefault();
-                const email = document.getElementById("emailSecao").value;
-                const password = document.getElementById("senhaSecao").value;
-                const btn = document.getElementById("btnLoginSubmit");
-                
-                btn.disabled = true;
-                btn.innerText = "Autenticando...";
-
-                // Autentica de forma segura direto no servidor do Supabase
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    document.getElementById("erroLogin").style.display = "block";
-                    btn.disabled = false;
-                    btn.innerText = "Entrar";
-                } else {
-                    modalDiv.remove();
-                    liberarAcessosPorEmail(data.user.email, secoes);
-                }
-            });
-        }
-
-        // Função que decide quais seções liberar com base em quem fez login
-        function liberarAcessosPorEmail(email, secoes) {
-            // Torna o botão de logout visível após autenticação bem-sucedida
-            document.getElementById("btnLogout").style.display = "block";
-
-            // Libera tudo se for o admin global ou o e-mail 3bpmi
-            if (email === "3bpmi@policiamilitar.sp.gov.br") {
-                secoes.forEach(secao => { secao.style.display = "block"; });
-                return;
-            }
-
-            // Libera seções específicas dependendo de qual e-mail logou
-            if (email.includes("p1")) secoes[0].style.display = "block";
-            else if (email.includes("p3")) secoes[1].style.display = "block";
-            else if (email.includes("p4")) secoes[2].style.display = "block";
-            else if (email.includes("p5")) secoes[3].style.display = "block";
-            else if (email.includes("sjd")) secoes[4].style.display = "block";
-            else {
-                alert("Usuário autenticado, mas sem seção vinculada.");
-            }
-        }
-
-        // Carregar contadores do Supabase
-        async function carregarEstatisticas() {
-            try {
-                const { count: countIPM } = await supabaseClient
-                    .from('inqueritos_pm')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('tipo', 'IPM');
-                document.getElementById('contadorIPM').innerText = countIPM || 0;
-
-                const { count: countIP } = await supabaseClient
-                    .from('inqueritos_pm')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('tipo', 'IP');
-                document.getElementById('contadorIP').innerText = countIP || 0;
-            } catch (e) {
-                console.error('Erro ao buscar dados do Supabase:', e);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', carregarEstatisticas);
-
-        // Cadastrar Inquérito (IPM ou IP)
-        async function cadastrarInquerito(tipo, formId, btnId, dataInputId, assuntoInputId) {
-            const form = document.getElementById(formId);
-            const btn = document.getElementById(btnId);
-
-            form.addEventListener('submit', async e => {
-                e.preventDefault();
-                btn.disabled = true;
-                btn.innerText = 'Salvando...';
-
-                const dataInstauracao = document.getElementById(dataInputId).value;
-                const assunto = document.getElementById(assuntoInputId).value;
-                const anoInstauracao = new Date(dataInstauracao + 'T00:00:00').getFullYear();
-
-                try {
-                    const { data: ultimos } = await supabaseClient
-                        .from('inqueritos_pm')
-                        .select('numeracao')
-                        .eq('tipo', tipo)
-                        .order('numeracao', { ascending: false })
-                        .limit(1);
-
-                    let proximaNumeracao = 1;
-                    if (ultimos && ultimos.length > 0) {
-                        proximaNumeracao = (ultimos[0].numeracao || 0) + 1;
-                    }
-
-                    const { error } = await supabaseClient
-                        .from('inqueritos_pm')
-                        .insert([{ 
-                            tipo, 
-                            numeracao: proximaNumeracao, 
-                            ano: anoInstauracao, 
-                            data_instauracao: dataInstauracao, 
-                            assunto 
-                        }]);
-
-                    if (error) throw error;
-
-                    const numeracaoFormatada = '3BPMI - ' + String(proximaNumeracao).padStart(3, '0') + `/06/${anoInstauracao}`;
-                    alert(`${tipo} cadastrado com sucesso!\nNumeração Gerada: ${numeracaoFormatada}`);
-                    form.reset();
-                    carregarEstatisticas();
-                } catch (error) {
-                    console.error('Erro:', error);
-                    alert(`Erro ao cadastrar ${tipo}!`);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = `Cadastrar ${tipo}`;
-                }
-            });
-        }
-
-        cadastrarInquerito('IPM', 'formIPM', 'btnIPM', 'data_instauracao_ipm', 'assunto_ipm');
-        cadastrarInquerito('IP', 'formIP', 'btnIP', 'data_instauracao_ip', 'assunto_ip');
-
-        // Gestão de Inquéritos
-        let tipoAtualGlobal = '';
-
-        async function abrirGestaoInqueritos(tipo) {
-            tipoAtualGlobal = tipo;
-            document.getElementById('modalTitulo').innerText = `Gerenciar ${tipo}s`;
-            document.getElementById('modalGestao').style.display = 'flex';
-            document.getElementById('formEdicaoContainer').style.display = 'none';
-            document.getElementById('tabelaContainer').style.display = 'block';
-            await renderizarTabela(tipo);
-        }
-
-        async function renderizarTabela(tipo) {
-            const container = document.getElementById('tabelaContainer');
-            container.innerHTML = '<p style="text-align:center; padding: 20px;">Carregando...</p>';
-
-            const { data, error } = await supabaseClient
-                .from('inqueritos_pm')
-                .select('*')
-                .eq('tipo', tipo)
-                .order('numeracao', { ascending: true });
-
-            if (error) {
-                container.innerHTML = '<p style="color: #c8102e; text-align:center;">Erro ao carregar dados.</p>';
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding: 20px; color: var(--pmesp-light-gray);">Nenhum registro encontrado.</p>';
-                return;
-            }
-
-            let html = `<table><thead><tr><th>Numeração</th><th>Data</th><th>Assunto</th><th style="text-align: center;">Ações</th></tr></thead><tbody>`;
-
-            data.forEach(item => {
-                const dataFormatada = item.data_instauracao ? item.data_instauracao.split('-').reverse().join('/') : '';
-                const anoRegistro = item.ano || (item.data_instauracao ? item.data_instauracao.split('-')[0] : '2026');
-                const xxxFormatado = String(item.numeracao).padStart(3, '0');
-                const numeracaoCompleta = `${xxxFormatado}/06/${anoRegistro}`;
-
-                html += `
-                    <tr>
-                        <td><strong>${numeracaoCompleta}</strong></td>
-                        <td>${dataFormatada}</td>
-                        <td>${item.assunto}</td>
-                        <td class="action-btns" style="text-align: center; white-space: nowrap;">
-                            <button class="btn-view" onclick="visualizarDetalhes('${item.id}', '${item.tipo}', '${numeracaoCompleta}', '${item.data_instauracao}', \`${item.assunto}\`)">Ver</button>
-                            <button class="btn-edit" onclick="prepararEdicao('${item.id}', '${item.tipo}', ${item.numeracao}, '${item.data_instauracao}', \`${item.assunto}\`)">Editar</button>
-                            <button class="btn-delete" onclick="excluirInquerito('${item.id}', '${item.tipo}')">Excluir</button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        function visualizarDetalhes(id, tipo, numeracaoCompleta, data, assunto) {
-            const dataF = data ? data.split('-').reverse().join('/') : '';
-            alert(`Detalhes do ${tipo}:\n\nNumeração: ${numeracaoCompleta}\nData de Instauração: ${dataF}\nAssunto: ${assunto}`);
-        }
-
-        // Exige autenticação recente de uma das contas autorizadas para editar/excluir.
-        // A senha não fica armazenada no HTML; a validação é feita pelo Supabase Auth.
-        const CONTAS_AUTORIZADAS_INQUERITOS = [
-            '3bpmi@policiamilitar.sp.gov.br',
-            '3bpmisjd@policiamilitar.sp.gov.br'
-        ];
-
-        async function autenticarAcaoInquerito(acao) {
-            const emailInformado = prompt(
-                `Autorização necessária para ${acao} registro.\ 
-Informe o e-mail de sua Seção:`
-            );
-            if (emailInformado === null) return false;
-
-            const email = emailInformado.trim().toLowerCase();
-            if (!CONTAS_AUTORIZADAS_INQUERITOS.includes(email)) {
-                alert('E-mail não autorizado para editar ou excluir IP/IPM.');
-                return false;
-            }
-
-            const senha = prompt('Informe a senha da conta selecionada:');
-            if (senha === null || !senha) return false;
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email,
-                password: senha
-            });
-
-            if (error || !data?.user?.email ||
-                data.user.email.toLowerCase() !== email) {
-                alert('Autenticação não realizada. Verifique o e-mail e a senha.');
-                return false;
-            }
-
-            return true;
-        }
-
-        async function prepararEdicao(id, tipo, numeracao, data, assunto) {
-            const autorizado = await autenticarAcaoInquerito('editar');
-            if (!autorizado) return;
-
-            document.getElementById('tabelaContainer').style.display = 'none';
-            document.getElementById('formEdicaoContainer').style.display = 'block';
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_tipo').value = tipo;
-            document.getElementById('edit_numeracao').value = numeracao;
-            document.getElementById('edit_data').value = data;
-            document.getElementById('edit_assunto').value = assunto;
-        }
-
-        function voltarParaTabela() {
-            document.getElementById('formEdicaoContainer').style.display = 'none';
-            document.getElementById('tabelaContainer').style.display = 'block';
-        }
-
-        document.getElementById('formEdicao').addEventListener('submit', async e => {
-            e.preventDefault();
-            const autorizado = await autenticarAcaoInquerito('salvar alterações');
-            if (!autorizado) return;
-
-            const id = document.getElementById('edit_id').value;
-            const tipo = document.getElementById('edit_tipo').value;
-            const numeracao = parseInt(document.getElementById('edit_numeracao').value);
-            const data_instauracao = document.getElementById('edit_data').value;
-            const assunto = document.getElementById('edit_assunto').value;
-            const ano = new Date(data_instauracao + 'T00:00:00').getFullYear();
-
-            const { error } = await supabaseClient
-                .from('inqueritos_pm')
-                .update({ numeracao, ano, data_instauracao, assunto })
-                .eq('id', id);
-
-            if (error) {
-                alert('Erro ao atualizar registro!');
-            } else {
-                alert('Registro atualizado com sucesso!');
-                voltarParaTabela();
-                renderizarTabela(tipo);
-                carregarEstatisticas();
-            }
-        });
-
-        async function excluirInquerito(id, tipo) {
-            const autorizado = await autenticarAcaoInquerito('excluir');
-            if (!autorizado) return;
-
-            if (confirm('Tem certeza que deseja excluir este inquérito?')) {
-                const { error } = await supabaseClient
-                    .from('inqueritos_pm')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    console.error('Erro ao excluir registro:', error);
-                    alert('Erro ao excluir registro. Verifique suas permissões no banco de dados.');
-                } else {
-                    alert('Registro excluído com sucesso!');
-                    renderizarTabela(tipo);
-                    carregarEstatisticas();
-                }
-            }
-        }
-
-        function fecharModal() {
-            document.getElementById('modalGestao').style.display = 'none';
-        }
-
-        // Envio de Folgas
-        const formFolgas = document.getElementById('formFolgas');
-        const btnFolgas = document.getElementById('btnFolgas');
-
-        formFolgas.addEventListener('submit', e => {
-            e.preventDefault();
-            btnFolgas.disabled = true;
-            btnFolgas.innerText = 'Enviando...';
-
-            const formData = new URLSearchParams({
-                acao: 'folga',
-                nome: document.getElementById('nome').value,
-                data_folga: document.getElementById('data_folga').value,
-                tipo_folga: document.getElementById('tipo_folga').value,
-                especifique: document.getElementById('especifique').value
-            });
-
-            fetch(scriptURLFolgas, { method: 'POST', body: formData })
-            .then(() => {
-                alert('Folga enviada e registrada no calendário com sucesso!');
-                formFolgas.reset();
-            })
-            .catch(() => alert('Erro ao enviar folga!'))
-            .finally(() => {
-                btnFolgas.disabled = false;
-                btnFolgas.innerText = 'Enviar Folga';
-            });
-        });
-        
-        // Envio de Operações
-        const formOperacoes = document.getElementById('formOperacoes');
-        const btnOperacoes = document.getElementById('btnOperacoes');
-
-        formOperacoes.addEventListener('submit', e => {
-            e.preventDefault();
-            btnOperacoes.disabled = true;
-            btnOperacoes.innerText = 'Criando Operação...';
-
-            const formData = new URLSearchParams({
-                acao: 'operacao',
-                data_inicio: document.getElementById('data_inicio').value,
-                data_termino: document.getElementById('data_termino').value,
-                nome_operacao: document.getElementById('nome_operacao').value,
-                descricao_operacao: document.getElementById('descricao_operacao').value
-            });
-
-            fetch(scriptURLOperacoes, { method: 'POST', body: formData })
-            .then(() => {
-                alert('Operação criada e registrada no calendário com sucesso!');
-                formOperacoes.reset();
-            })
-            .catch(() => alert('Erro ao criar operação!'))
-            .finally(() => {
-                btnOperacoes.disabled = false;
-                btnOperacoes.innerText = 'Criar Operação';
-            });
-        });
-
-        // Envio de Solenidades
-        const formSolenidades = document.getElementById('formSolenidades');
-        const btnSolenidades = document.getElementById('btnSolenidades');
-
-        formSolenidades.addEventListener('submit', e => {
-            e.preventDefault();
-            btnSolenidades.disabled = true;
-            btnSolenidades.innerText = 'Registrando...';
-
-            const formData = new URLSearchParams({
-                acao: 'solenidade',
-                data_evento: document.getElementById('data_evento').value,
-                nome_evento: document.getElementById('nome_evento').value,
-                local_evento: document.getElementById('local_evento').value,
-                descricao_evento: document.getElementById('descricao_evento').value
-            });
-
-            fetch(scriptURLSolenidades, { method: 'POST', body: formData })
-            .then(() => {
-                alert('Solenidade/Evento registrado no calendário com sucesso!');
-                formSolenidades.reset();
-            })
-            .catch(() => alert('Erro ao registrar evento!'))
-            .finally(() => {
-                btnSolenidades.disabled = false;
-                btnSolenidades.innerText = 'Registrar Evento';
-            });
-        });
-    </script>
+<!-- Tela de login -->
+<div id="login" class="overlay" hidden>
+  <form id="fLogin" class="card">
+    <img src="Brasão_3BC.png" alt="Brasão do 3º B.C." onerror="this.hidden=true">
+    <h2>Acesso restrito</h2>
+    <label>E-mail da seção<input type="email" id="lEmail" autocomplete="username" required></label>
+    <label>Senha<input type="password" id="lSenha" autocomplete="current-password" required></label>
+    <p id="erroLogin" class="msg-erro" hidden></p>
+    <button class="btn" id="bLogin">Entrar</button>
+  </form>
+</div>
+
+<header>
+  <img src="Brasão_3BC.png" alt="" onerror="this.hidden=true">
+  <div class="marca"><b>Polícia Militar do Estado de São Paulo</b><small>Painel de Gestão · 3º Batalhão de Caçadores</small></div>
+  <span id="usuario"></span>
+  <button class="btn ghost" id="sair" hidden>Sair</button>
+</header>
+<nav id="abas" hidden></nav>
+<main id="conteudo"></main>
+<footer>Uso restrito · 3º Batalhão de Caçadores</footer>
+
+<!-- Registros de inquéritos -->
+<dialog id="dReg">
+  <div class="topo"><h2 id="rTitulo"></h2><button class="mini" data-fechar>Fechar</button></div>
+  <input type="search" id="rBusca" placeholder="Buscar por número, data ou assunto" aria-label="Buscar">
+  <div class="tw"><table><thead><tr><th>Número</th><th>Data</th><th>Assunto</th><th></th></tr></thead><tbody id="rCorpo"></tbody></table></div>
+</dialog>
+
+<!-- Editar registro -->
+<dialog id="dEd">
+  <form id="fEd">
+    <h2 id="eTitulo">Editar registro</h2>
+    <label>Data de instauração<input type="date" id="eData" required></label>
+    <label>Assunto<textarea id="eAssunto" required></textarea></label>
+    <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
+  </form>
+</dialog>
+
+<!-- Confirmação por senha -->
+<dialog id="dSenha">
+  <form id="fSenha">
+    <h2>Confirme sua senha</h2>
+    <p id="sTexto" class="cont"></p>
+    <input type="password" id="sSenha" autocomplete="current-password" aria-label="Senha" required>
+    <p id="sErro" class="msg-erro" hidden>Senha incorreta.</p>
+    <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn" id="bSenha">Confirmar</button></div>
+  </form>
+</dialog>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   1) CONFIGURAÇÃO - é aqui que você faz as alterações do dia a dia
+   ===================================================================== */
+const CONFIG = {
+  SUPABASE_URL: 'https://xxzmlddpmmgwhbotutsj.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1sZGRwbW1nd2hib3R1dHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTY3MjksImV4cCI6MjEwNjE3MjcyOX0.7d1iqK1Se3luzS6aZI38enGUQHXOXpjwlnyzPNZHAiI',
+  URL_FOLGAS: 'https://script.google.com/macros/s/AKfycby6MaQTwhw_QePtaJLhhvJzKOxK7nVd8d5wFGhRj6WNh_MoH0YfjpvBoELPaJ8PySzz0g/exec',
+  URL_OPERACOES: 'https://script.google.com/macros/s/AKfycbwU2bZX56SWM4Sc3hCc8JrAMN2sZz2H-R-7o_vIYRcdqRTduQnvyhuXpLObkvtNOHjv/exec',
+  URL_EVENTOS: 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec',
+  UNIDADE: '3BPMI',            // aparece na numeração: 3BPMI - 012/06/2026
+  CODIGO: '06',
+  MINUTOS_INATIVIDADE: 15      // sai sozinho após esse tempo sem uso
+};
+
+// Lista de oficiais do formulário de folgas (um por linha, entre aspas)
+const NOMES = [
+  'Ten Cel PM Eduardo','Maj PM Martins Ribeiro','Maj PM Luana','Cap PM Cravero','Cap PM Del Vecchio',
+  'Cap PM André Luís','Ten PM Felipe Carvalho','Ten PM Ribeiro','Ten PM Feitosa','Ten PM Natalia',
+  'Ten PM Derick','Ten PM Chevchuk','Ten PM Zanardo','Ten PM Larissa Muniz','Ten PM Borgo'
+];
+
+// Formulários que enviam para o Google Agenda (cada "id" é o nome do campo enviado)
+const FORMS = {
+  folga: {
+    titulo: 'Agendar folga', botao: 'Enviar folga', url: CONFIG.URL_FOLGAS, acao: 'folga',
+    ok: 'Folga enviada e registrada no calendário.',
+    campos: [
+      {id:'nome', label:'Nome', tipo:'select', opcoes:NOMES, req:1},
+      {id:'data_folga', label:'Data desejada', tipo:'date', req:1},
+      {id:'tipo_folga', label:'Tipo de folga', tipo:'select', req:1,
+       opcoes:['Mensal','Produtividade','Horas Passadas','Concessão','Semanal','Meio Expediente','Outra']},
+      {id:'especifique', label:'Especifique (obrigatório se o tipo for Outra)', tipo:'text'}
+    ],
+    validar: d => d.tipo_folga === 'Outra' && !d.especifique.trim() ? 'Preencha o campo "Especifique".' : null
+  },
+  operacao: {
+    titulo: 'Agendar operação', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
+    ok: 'Operação criada e registrada no calendário.',
+    campos: [
+      {id:'data_inicio', label:'Data de início', tipo:'date', req:1},
+      {id:'data_termino', label:'Data de término', tipo:'date', req:1},
+      {id:'nome_operacao', label:'Nome da operação', tipo:'text', req:1, ph:'Ex: Operação Impacto'},
+      {id:'descricao_operacao', label:'Descrição', tipo:'textarea', ph:'Detalhamento da operação'}
+    ],
+    validar: d => d.data_termino < d.data_inicio ? 'A data de término não pode ser anterior ao início.' : null
+  },
+  evento: {
+    titulo: 'Agendar solenidade ou evento', botao: 'Registrar evento', url: CONFIG.URL_EVENTOS, acao: 'solenidade',
+    ok: 'Evento registrado no calendário.',
+    campos: [
+      {id:'data_evento', label:'Data do evento', tipo:'date', req:1},
+      {id:'nome_evento', label:'Nome da solenidade ou evento', tipo:'text', req:1, ph:'Ex: Passagem de Comando'},
+      {id:'local_evento', label:'Local', tipo:'text'},
+      {id:'descricao_evento', label:'Descrição e observações', tipo:'textarea'}
+    ]
+  }
+};
+
+// Seções e o que aparece em cada uma. Tipos de item: form, link, inq
+const SECOES = {
+  p1: {nome:'P/1 · Seção de Pessoal', itens:[
+    {form:'folga'},
+    {link:'Calendário de folgas', texto:'Folgas programadas dos oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
+    {link:'Efetivo', texto:'Controle de pessoal e atribuições da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
+  ]},
+  p3: {nome:'P/3 · Seção de Operações', itens:[
+    {form:'operacao'},
+    {link:'Calendário de operações', texto:'Agenda oficial com a programação das operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+  ]},
+  p4: {nome:'P/4 · Seção de Logística', itens:[
+    {link:'Viaturas', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
+  ]},
+  p5: {nome:'P/5 · Seção de Comunicação Social', itens:[
+    {form:'evento'},
+    {link:'Calendário de solenidades', texto:'Solenidades e eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+  ]},
+  sjd: {nome:'SPJMD · Seção de Polícia Judiciária Militar e Disciplina', itens:[{inq:'IPM'},{inq:'IP'}]}
+};
+
+/* =====================================================================
+   2) CÓDIGO DO SISTEMA - normalmente não precisa mexer daqui para baixo
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtData = d => d ? d.split('-').reverse().join('/') : '';
+const fmtNum = r => `${String(r.numeracao).padStart(3,'0')}/${CONFIG.CODIGO}/${r.ano}`;
+const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+let usuario = null, perfil = null, tipoAtual = '', registros = [], editando = null;
+
+function aviso(msg, erro) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (erro ? ' erro' : '');
+  t.textContent = msg;
+  $('#toasts').append(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
+/* ---------- Login e sessão ---------- */
+$('#fLogin').onsubmit = async e => {
+  e.preventDefault();
+  const b = $('#bLogin'), er = $('#erroLogin');
+  b.disabled = true; er.hidden = true;
+  const { error } = await db.auth.signInWithPassword({ email: $('#lEmail').value.trim(), password: $('#lSenha').value });
+  b.disabled = false;
+  if (error) {
+    er.textContent = error.status === 400 ? 'E-mail ou senha incorretos.' : 'Não foi possível conectar. Verifique a internet e tente novamente.';
+    er.hidden = false; return;
+  }
+  $('#lSenha').value = '';
+  iniciar();
+};
+
+async function iniciar() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { $('#login').hidden = false; return; }
+  usuario = session.user;
+  const { data } = await db.from('perfis').select('secao').maybeSingle();
+  perfil = data?.secao;
+  if (!perfil) {
+    await db.auth.signOut();
+    $('#login').hidden = false;
+    aviso('Seu e-mail não está vinculado a nenhuma seção. Procure o administrador.', 1);
+    return;
+  }
+  $('#login').hidden = true;
+  $('#usuario').textContent = usuario.email;
+  $('#sair').hidden = false;
+  montar();
+  vigiarInatividade();
+}
+
+async function sair() { await db.auth.signOut(); location.reload(); }
+$('#sair').onclick = sair;
+
+let relogio;
+function vigiarInatividade() {
+  const zerar = () => { clearTimeout(relogio); relogio = setTimeout(sair, CONFIG.MINUTOS_INATIVIDADE * 60000); };
+  ['click','keydown','mousemove','touchstart'].forEach(ev => addEventListener(ev, zerar, { passive: true }));
+  zerar();
+}
+
+/* ---------- Navegação entre seções ---------- */
+function permitidas() { return perfil === 'admin' ? Object.keys(SECOES) : [perfil].filter(k => SECOES[k]); }
+
+function montar() {
+  const chaves = permitidas();
+  $('#abas').hidden = chaves.length < 2;
+  $('#abas').innerHTML = chaves.map(k => `<button data-aba="${k}">${esc(SECOES[k].nome)}</button>`).join('');
+  addEventListener('hashchange', () => abrir(location.hash.slice(1)));
+  abrir(location.hash.slice(1));
+}
+
+function abrir(k) {
+  const chaves = permitidas();
+  if (!chaves.includes(k)) k = chaves[0];
+  if (!k) return;
+  document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', b.dataset.aba === k));
+  $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
+  contar();
+}
+$('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
+
+function desenharItem(i) {
+  if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
+  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'Inquérito Policial Militar (IPM)' : 'Inquérito Policial (IP)'}</h2>
+    <form class="col" data-inq="${i.inq}">
+      <label>Data de instauração<input type="date" name="data" required></label>
+      <label>Assunto<textarea name="assunto" required></textarea></label>
+      <button class="btn">Cadastrar ${i.inq}</button>
+    </form>
+    <button class="btn ghost" data-ver="${i.inq}">Ver registros</button>
+    <p class="cont">Total instaurados: <b id="cont${i.inq}">-</b></p></div>`;
+  const f = FORMS[i.form];
+  const campos = f.campos.map(c => {
+    const at = `id="${c.id}" name="${c.id}"${c.req ? ' required' : ''} placeholder="${esc(c.ph || '')}"`;
+    const el = c.tipo === 'select' ? `<select id="${c.id}" name="${c.id}"${c.req ? ' required' : ''}><option value="">Selecione</option>${c.opcoes.map(o => `<option>${esc(o)}</option>`).join('')}</select>`
+      : c.tipo === 'textarea' ? `<textarea ${at}></textarea>` : `<input type="${c.tipo}" ${at}>`;
+    return `<label>${esc(c.label)}${el}</label>`;
+  }).join('');
+  return `<div class="card"><h2>${esc(f.titulo)}</h2><form class="col" data-form="${i.form}">${campos}<button class="btn">${esc(f.botao)}</button></form></div>`;
+}
+
+/* ---------- Envio dos formulários ---------- */
+$('#conteudo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, b = $('button', f), txt = b.textContent;
+  b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    if (f.dataset.inq) await cadastrarInq(f); else await enviarForm(f);
+  } catch (err) { console.error(err); aviso('Não foi possível concluir. Tente novamente.', 1); }
+  b.disabled = false; b.textContent = txt;
+});
+
+async function enviarForm(f) {
+  const def = FORMS[f.dataset.form], d = {};
+  def.campos.forEach(c => d[c.id] = f.elements[c.id].value);
+  const msg = def.validar?.(d);
+  if (msg) return aviso(msg, 1);
+  await fetch(def.url, { method: 'POST', body: new URLSearchParams({ acao: def.acao, ...d }) });
+  aviso(def.ok); f.reset();
+}
+
+/* ---------- Inquéritos (IPM / IP) ---------- */
+async function cadastrarInq(f) {
+  const t = f.dataset.inq;
+  const { data, error } = await db.from('inqueritos_pm')
+    .insert({ tipo: t, data_instauracao: f.elements.data.value, assunto: f.elements.assunto.value.trim() })
+    .select().single();
+  if (error) throw error;
+  aviso(`${t} cadastrado: ${CONFIG.UNIDADE} - ${fmtNum(data)}`);
+  f.reset(); contar();
+}
+
+async function contar() {
+  for (const t of ['IPM', 'IP']) {
+    const el = $('#cont' + t); if (!el) continue;
+    const { count } = await db.from('inqueritos_pm').select('*', { count: 'exact', head: true }).eq('tipo', t).eq('excluido', false);
+    el.textContent = count ?? '-';
+  }
+}
+
+$('#conteudo').addEventListener('click', e => {
+  const b = e.target.closest('[data-ver]');
+  if (b) { tipoAtual = b.dataset.ver; $('#rTitulo').textContent = `Registros de ${tipoAtual}`; $('#rBusca').value = ''; $('#dReg').showModal(); carregar(); }
+});
+
+async function carregar() {
+  $('#rCorpo').innerHTML = '<tr><td colspan="4">Carregando…</td></tr>';
+  const { data, error } = await db.from('inqueritos_pm').select('*').eq('tipo', tipoAtual).eq('excluido', false).order('numeracao', { ascending: false });
+  if (error) { $('#rCorpo').innerHTML = '<tr><td colspan="4" class="msg-erro">Erro ao carregar os registros.</td></tr>'; return; }
+  registros = data; listar();
+}
+
+function listar() {
+  const q = $('#rBusca').value.toLowerCase();
+  const l = registros.filter(r => `${fmtNum(r)} ${fmtData(r.data_instauracao)} ${r.assunto}`.toLowerCase().includes(q));
+  $('#rCorpo').innerHTML = l.length ? l.map(r => `<tr>
+      <td class="nw"><b>${fmtNum(r)}</b></td><td class="nw">${fmtData(r.data_instauracao)}</td><td>${esc(r.assunto)}</td>
+      <td class="nw"><button class="mini" data-ed="${esc(r.id)}">Editar</button> <button class="mini perigo" data-ex="${esc(r.id)}">Excluir</button></td></tr>`).join('')
+    : '<tr><td colspan="4" class="cont">Nenhum registro encontrado.</td></tr>';
+}
+$('#rBusca').oninput = listar;
+
+$('#rCorpo').addEventListener('click', async e => {
+  const bEd = e.target.closest('[data-ed]'), bEx = e.target.closest('[data-ex]');
+  if (!bEd && !bEx) return;
+  const r = registros.find(x => String(x.id) === (bEd || bEx).dataset[bEd ? 'ed' : 'ex']);
+  if (!r) return;
+  if (bEd) {
+    if (!await confirmarSenha(`Editar ${tipoAtual} ${fmtNum(r)}.`)) return;
+    editando = r;
+    $('#eTitulo').textContent = `Editar ${tipoAtual} ${fmtNum(r)}`;
+    $('#eData').value = r.data_instauracao; $('#eAssunto').value = r.assunto;
+    $('#dEd').showModal();
+  } else {
+    if (!await confirmarSenha(`Excluir ${tipoAtual} ${fmtNum(r)}. O registro sai da lista e fica guardado no histórico.`)) return;
+    const { error } = await db.from('inqueritos_pm').update({ excluido: true }).eq('id', r.id);
+    if (error) return aviso('Não foi possível excluir. Verifique sua permissão.', 1);
+    aviso('Registro excluído.'); carregar(); contar();
+  }
+});
+
+$('#fEd').onsubmit = async e => {
+  e.preventDefault();
+  const { error } = await db.from('inqueritos_pm').update({ data_instauracao: $('#eData').value, assunto: $('#eAssunto').value.trim() }).eq('id', editando.id);
+  if (error) return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
+  $('#dEd').close(); aviso('Registro atualizado.'); carregar();
+};
+
+/* ---------- Confirmação por senha (para editar e excluir) ---------- */
+function confirmarSenha(texto) {
+  return new Promise(resolve => {
+    const d = $('#dSenha'); let tentativas = 0;
+    $('#sTexto').textContent = texto; $('#sSenha').value = ''; $('#sErro').hidden = true;
+    d.returnValue = ''; d.showModal(); $('#sSenha').focus();
+    d.onclose = () => resolve(d.returnValue === 'ok');
+    $('#fSenha').onsubmit = async e => {
+      e.preventDefault();
+      const b = $('#bSenha'); b.disabled = true;
+      // Cliente temporário: confere a senha sem trocar a sessão de quem está logado
+      const teste = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+      const { error } = await teste.auth.signInWithPassword({ email: usuario.email, password: $('#sSenha').value });
+      b.disabled = false;
+      if (!error) return d.close('ok');
+      $('#sErro').hidden = false; $('#sSenha').value = '';
+      if (++tentativas >= 3) { d.close('cancel'); aviso('Muitas tentativas incorretas.', 1); }
+    };
+  });
+}
+
+document.addEventListener('click', e => { const b = e.target.closest('[data-fechar]'); if (b) b.closest('dialog').close('cancel'); });
+
+iniciar();
+</script>
 </body>
 </html>
