@@ -173,7 +173,7 @@ input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:
 <dialog id="dEd">
   <form id="fEd">
     <h2 id="eTitulo">Editar registro</h2>
-    <label>Data de instauração<input type="date" id="eData" required></label>
+    <label>Data de Instauração<input type="date" id="eData" required></label>
     <label>Assunto<textarea id="eAssunto" required></textarea></label>
     <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
   </form>
@@ -247,7 +247,7 @@ const NOMES = [
 // Formulários que enviam para o Google Agenda (cada "id" é o nome do campo enviado)
 const FORMS = {
   folga: {
-    titulo: 'Agendar folga', botao: 'Enviar folga', url: CONFIG.URL_FOLGAS, acao: 'folga',
+    titulo: 'AGENDAR FOLGA', botao: 'Enviar folga', url: CONFIG.URL_FOLGAS, acao: 'folga',
     ok: 'Folga enviada e registrada no calendário.',
     campos: [
       {id:'nome', label:'Nome', tipo:'select', opcoes:NOMES, req:1},
@@ -259,7 +259,7 @@ const FORMS = {
     validar: d => d.tipo_folga === 'Outra' && !d.especifique.trim() ? 'Preencha o campo "Especifique".' : null
   },
   operacao: {
-    titulo: 'Agendar operação', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
+    titulo: 'CRIAR OPERAÇÃO', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
     ok: 'Operação criada e registrada no calendário.',
     campos: [
       {id:'data_inicio', label:'Data de início', tipo:'date', req:1},
@@ -270,7 +270,7 @@ const FORMS = {
     validar: d => d.data_termino < d.data_inicio ? 'A data de término não pode ser anterior ao início.' : null
   },
   evento: {
-    titulo: 'Agendar solenidade ou evento', botao: 'Registrar evento', url: CONFIG.URL_EVENTOS, acao: 'solenidade',
+    titulo: 'AGENDAR SOLENIDADE / EVENTO', botao: 'Registrar evento', url: CONFIG.URL_EVENTOS, acao: 'solenidade',
     ok: 'Evento registrado no calendário.',
     campos: [
       {id:'data_evento', label:'Data do evento', tipo:'date', req:1},
@@ -285,20 +285,20 @@ const FORMS = {
 const SECOES = {
   p1: {nome:'P/1 · Seç Pes', itens:[
     {form:'folga'},
-    {link:'Calendário de folgas', texto:'Folgas programadas dos oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
-    {link:'Efetivo', texto:'Controle de pessoal e atribuições da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
+    {link:'CALENDÁRIO DE FOLGAS', texto:'Folgas programadas dos Oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
+    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
     {form:'operacao'},
     {freq:true},
-    {link:'Calendário de Operações', texto:'Agenda oficial com a programação das operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {link:'CALENDÁRIO DE OPERAÇÕES', texto:'Agenda de Operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
   p4: {nome:'P/4 · Seç Log', itens:[
-    {link:'Viaturas', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
+    {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
   ]},
   p5: {nome:'P/5 · Seç ComSoc', itens:[
     {form:'evento'},
-    {link:'Calendário de solenidades', texto:'Solenidades e eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
   sjd: {nome:'SPJMD · Seç PJMD', itens:[{inq:'IPM'},{inq:'IP'}]}
 };
@@ -387,11 +387,11 @@ function abrir(k) {
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
 function desenharItem(i) {
-  if (i.freq) return `<div class="card"><h2>Controle de Frequência</h2><p class="cont">Lançamentos mensais de folgas, meios expedientes, inversões e demais alterações do efetivo.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
+  if (i.freq) return `<div class="card"><h2>CONTROLE DE FREQUÊNCIA</h2><p class="cont">Lançamentos de folgas, meios-expedientes, inversões e demais alterações de escala.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
   if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
-  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'Inquérito Policial Militar (IPM)' : 'Inquérito Policial (IP)'}</h2>
+  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'IINQUÉRITO POLICIAL MILITAR - IPM' : 'INQUÉRITO POLICIAL - IP'}</h2>
     <form class="col" data-inq="${i.inq}">
-      <label>Data de instauração<input type="date" name="data" required></label>
+      <label>Data de Instauração<input type="date" name="data" required></label>
       <label>Assunto<textarea name="assunto" required></textarea></label>
       <button class="btn">Cadastrar ${i.inq}</button>
     </form>
