@@ -113,6 +113,29 @@ footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
   footer{padding:16px}
 }
 @media (max-width:360px){header img{height:34px}}
+/* ===== Controle de Frequência ===== */
+h3{font-size:.95rem}
+input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:var(--red);flex:none}
+.chk{flex-direction:row;align-items:center;gap:10px;color:var(--txt);font-size:.92rem;font-weight:500;cursor:pointer}
+.fr-form{border:1px solid var(--linha);border-radius:8px;padding:16px;margin:16px 0;background:var(--bg);display:flex;flex-direction:column;gap:14px}
+.dupla,.horas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tp{border-bottom:1px solid var(--linha);padding:9px 0}
+.tp:last-of-type{border-bottom:0}
+.tp-corpo{display:flex;flex-direction:column;gap:8px;margin:10px 0 4px 28px}
+.tp-corpo[hidden]{display:none}
+.tp-corpo textarea{min-height:64px}
+.fr-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 10px}
+.fr-topo select{max-width:100%}
+.fr-dia{border:1px solid var(--linha);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.fr-dia-cab{background:#1c2128;border-bottom:1px solid var(--linha);border-left:3px solid var(--red);padding:9px 14px;font-size:.9rem;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fr-dia-cab span{color:var(--mut);font-size:.8rem}
+.fr-item{padding:12px 14px;border-bottom:1px solid var(--linha);display:flex;flex-direction:column;gap:6px}
+.fr-item:last-child{border-bottom:0}
+.fr-cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85rem}
+.tag{background:#262c35;border-radius:4px;padding:2px 8px;font-size:.72rem;color:var(--mut);font-weight:600}
+.fr-item p{font-size:.88rem}
+.fr-acoes{display:flex;gap:8px}
+@media (max-width:600px){.dupla,.horas{grid-template-columns:1fr}.tp-corpo{margin-left:0}.fr-acoes .mini{flex:1}}
 </style>
 </head>
 <body>
@@ -152,6 +175,36 @@ footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
     <h2 id="eTitulo">Editar registro</h2>
     <label>Data de instauração<input type="date" id="eData" required></label>
     <label>Assunto<textarea id="eAssunto" required></textarea></label>
+    <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
+  </form>
+</dialog>
+
+<!-- Controle de Frequência (P/3) -->
+<dialog id="dFreq">
+  <div class="topo"><h2>Controle de Frequência</h2><button class="mini" data-fechar>Fechar</button></div>
+  <label>Mês de referência<input type="month" id="fMes" required></label>
+  <form id="fFreq" class="fr-form">
+    <h3>Novo lançamento</h3>
+    <div class="dupla">
+      <label>Data<input type="date" id="fData" required></label>
+      <label>Efetivo<select id="fPol" required></select></label>
+    </div>
+    <div id="fTipos"></div>
+    <div class="acoes"><button class="btn">Registrar lançamento</button></div>
+  </form>
+  <div class="fr-topo">
+    <h3>Lançamentos de <span id="fMesNome"></span></h3>
+    <select id="fFiltro" aria-label="Filtrar por policial"></select>
+  </div>
+  <div id="fLista"></div>
+</dialog>
+
+<!-- Editar lançamento de frequência -->
+<dialog id="dFreqEd">
+  <form id="fFreqEd">
+    <h2 id="feTitulo">Editar lançamento</h2>
+    <label>Data<input type="date" id="feData" required></label>
+    <label>Texto<textarea id="feTexto" required></textarea></label>
     <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
   </form>
 </dialog>
@@ -230,23 +283,24 @@ const FORMS = {
 
 // Seções e o que aparece em cada uma. Tipos de item: form, link, inq
 const SECOES = {
-  p1: {nome:'P/1 · Pessoal', itens:[
+  p1: {nome:'P/1 · Seç Pes', itens:[
     {form:'folga'},
     {link:'Calendário de folgas', texto:'Folgas programadas dos oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
     {link:'Efetivo', texto:'Controle de pessoal e atribuições da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
   ]},
-  p3: {nome:'P/3 · Operações', itens:[
+  p3: {nome:'P/3 · Seç Op', itens:[
     {form:'operacao'},
-    {link:'Calendário de operações', texto:'Agenda oficial com a programação das operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {freq:true},
+    {link:'Calendário de Operações', texto:'Agenda oficial com a programação das operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
-  p4: {nome:'P/4 · Logística', itens:[
+  p4: {nome:'P/4 · Seç Log', itens:[
     {link:'Viaturas', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
   ]},
-  p5: {nome:'P/5 · Comunicação Social', itens:[
+  p5: {nome:'P/5 · Seç ComSoc', itens:[
     {form:'evento'},
     {link:'Calendário de solenidades', texto:'Solenidades e eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
-  sjd: {nome:'SPJMD · Polícia Judiciária e Disciplina', itens:[{inq:'IPM'},{inq:'IP'}]}
+  sjd: {nome:'SPJMD · Seç PJMD', itens:[{inq:'IPM'},{inq:'IP'}]}
 };
 
 /* =====================================================================
@@ -333,6 +387,7 @@ function abrir(k) {
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
 function desenharItem(i) {
+  if (i.freq) return `<div class="card"><h2>Controle de Frequência</h2><p class="cont">Lançamentos mensais de folgas, meios expedientes, inversões e demais alterações do efetivo.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
   if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
   if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'Inquérito Policial Militar (IPM)' : 'Inquérito Policial (IP)'}</h2>
     <form class="col" data-inq="${i.inq}">
@@ -437,6 +492,203 @@ $('#fEd').onsubmit = async e => {
   const { error } = await db.from('inqueritos_pm').update({ data_instauracao: $('#eData').value, assunto: $('#eAssunto').value.trim() }).eq('id', editando.id);
   if (error) return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
   $('#dEd').close(); aviso('Registro atualizado.'); carregar();
+};
+
+/* ---------- Controle de Frequência (P/3) ---------- */
+const EFETIVO = {
+  'P/3': ['Cap PM 990113-2 Cravero','2º Sgt PM 147149-0 Brito','Cb PM 980440-4 Alcebíades','Cb PM 152866-1 Neres','Cb PM 144936-2 Fukuda'],
+  'Geocriminal': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
+  'DCap': ['1º Sgt PM 980576-1 Bino','Cb PM 134666-A Ribas','Cb PM 149535-6 Cognetti','Sd PM 192404-4 Gimenes']
+};
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DIAS = ['dom','seg','ter','qua','qui','sex','sáb'];
+// {n}=NomeDoPolicial. Textos exatamente como definidos; o que termina em espaço é completado pelo usuário.
+const TIPOS_FREQ = [
+  {id:'aglutinacao',   nome:'Aglutinação',                texto:(n)    => `${n} não trabalha neste dia, aglutinação dos 02 (dois) Meios Expedientes da semana `},
+  {id:'produtividade', nome:'Folga Produtividade',        texto:(n)    => `${n} não trabalha neste dia, usufruindo folga produtividade`},
+  {id:'mensal',        nome:'Folga Mensal',               texto:(n)    => `${n} não trabalha neste dia, usufruindo Folga Mensal referente ao mês de `},
+  {id:'meio',          nome:'Meio Expediente', horas:1,   texto:(n, h) => `${n} trabalha das ${h.ini} às ${h.fim}, usufruindo o ${h.ord} Meio Expediente da semana `},
+  {id:'inversao',      nome:'Inversão de Serviço',        texto:(n)    => `${n} não trabalha neste dia, inversão de serviço com o dia '...'. No lugar trabalha `},
+  {id:'alteracao',     nome:'Alteração de Horário', horas:1, texto:(n, h) => `${n} trabalha neste dia das ${h.ini} às ${h.fim}`},
+  {id:'acumulo',       nome:'Acúmulo de Meio Expediente', texto:(n)    => `${n} acumula XXXX Meio(s) Expediente(s) da semana `},
+  {id:'compensacao',   nome:'Compensação',                texto:(n)    => `${n} não trabalha neste dia, usufruindo Folga Compensação referente a `}
+];
+const tipoFreq = id => TIPOS_FREQ.find(t => t.id === id);
+const grupoDe = pol => Object.keys(EFETIVO).find(g => EFETIVO[g].includes(pol)) || '';
+const hh = v => v ? v.replace(':', 'h') : 'XXhXX';
+const dataLocal = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const isoData = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+let freq = { lista: [], ord: '1º', editando: null };
+
+// Segunda a sexta da semana da data informada (sábado/domingo ficam na semana que termina)
+function semanaUtil(s) {
+  const d = dataLocal(s), seg = new Date(d);
+  seg.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const sex = new Date(seg); sex.setDate(seg.getDate() + 4);
+  return [isoData(seg), isoData(sex)];
+}
+async function contarMeios(pol, data) {
+  const [a, b] = semanaUtil(data);
+  const { data: r, error } = await db.from('frequencia_pm').select('id').eq('policial', pol).eq('tipo', 'meio').eq('excluido', false).gte('data', a).lte('data', b);
+  if (error) throw error;
+  return r.length;
+}
+
+const blocoFreq = id => $(`#fTipos [data-t="${id}"]`);
+function gerarTexto(id) {
+  const bl = blocoFreq(id), q = n => bl.querySelector(`[name=${n}]`);
+  return tipoFreq(id).texto($('#fPol').value, { ini: hh(q('ini')?.value), fim: hh(q('fim')?.value), ord: freq.ord });
+}
+function atualizarTexto(id, forcar) {
+  const ta = blocoFreq(id).querySelector('textarea');
+  if (forcar || !ta.dataset.editado) { ta.value = gerarTexto(id); delete ta.dataset.editado; }
+}
+function marcados() { return [...document.querySelectorAll('#fTipos input[type=checkbox]:checked')].map(c => c.value); }
+
+async function atualizarOrdinal() {
+  const pol = $('#fPol').value, data = $('#fData').value, av = blocoFreq('meio').querySelector('[data-aviso]');
+  if (!pol || !data) return;
+  try {
+    const n = await contarMeios(pol, data);
+    freq.ord = n >= 2 ? '2º' : `${n + 1}º`;
+    av.textContent = n >= 2 ? 'Este policial já tem 2 Meios Expedientes lançados nesta semana.' : `Será lançado como ${freq.ord} Meio Expediente da semana.`;
+    atualizarTexto('meio');
+  } catch (err) { console.error(err); av.textContent = 'Não foi possível conferir os Meios Expedientes da semana.'; }
+}
+
+function montarFormFreq() {
+  $('#fPol').innerHTML = '<option value="">Selecione</option>' + Object.entries(EFETIVO).map(([g, l]) =>
+    `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
+  $('#fFiltro').innerHTML = '<option value="">Todo o efetivo</option>' + Object.entries(EFETIVO).map(([g, l]) =>
+    `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
+  $('#fTipos').innerHTML = TIPOS_FREQ.map(t => `<div class="tp" data-t="${t.id}">
+    <label class="chk"><input type="checkbox" value="${t.id}">${esc(t.nome)}</label>
+    <div class="tp-corpo" hidden>
+      ${t.horas ? '<div class="horas"><label>Início<input type="time" name="ini"></label><label>Término<input type="time" name="fim"></label></div>' : ''}
+      ${t.id === 'meio' ? '<p class="cont" data-aviso></p>' : ''}
+      <textarea aria-label="Texto: ${esc(t.nome)}"></textarea>
+    </div></div>`).join('');
+  freq.ord = '1º';
+}
+
+function ajustarMes() {
+  const mes = $('#fMes').value; if (!mes) return;
+  const [y, m] = mes.split('-').map(Number), ult = isoData(new Date(y, m, 0)), hoje = isoData(new Date());
+  $('#fData').min = `${mes}-01`; $('#fData').max = ult;
+  if (!$('#fData').value || $('#fData').value < `${mes}-01` || $('#fData').value > ult)
+    $('#fData').value = hoje >= `${mes}-01` && hoje <= ult ? hoje : `${mes}-01`;
+  $('#fMesNome').textContent = `${MESES[m - 1]} de ${y}`;
+  carregarFreq();
+}
+
+async function carregarFreq() {
+  const mes = $('#fMes').value; if (!mes) return;
+  const [y, m] = mes.split('-').map(Number);
+  $('#fLista').innerHTML = '<p class="cont">Carregando…</p>';
+  const { data, error } = await db.from('frequencia_pm').select('*').eq('excluido', false)
+    .gte('data', `${mes}-01`).lte('data', isoData(new Date(y, m, 0))).order('data').order('criado_em');
+  if (error) { $('#fLista').innerHTML = '<p class="msg-erro">Erro ao carregar os lançamentos.</p>'; return; }
+  freq.lista = data; listarFreq();
+}
+
+function listarFreq() {
+  const f = $('#fFiltro').value;
+  const l = freq.lista.filter(r => !f || r.policial === f);
+  const dias = {};
+  l.forEach(r => (dias[r.data] ||= []).push(r));
+  $('#fLista').innerHTML = Object.keys(dias).sort().map(d => `<section class="fr-dia">
+    <div class="fr-dia-cab"><b>${fmtData(d)} (${DIAS[dataLocal(d).getDay()]})</b><span>${dias[d].length} lançamento(s)</span></div>
+    ${dias[d].map(r => `<div class="fr-item">
+      <div class="fr-cab"><span class="tag">${esc(tipoFreq(r.tipo)?.nome || r.tipo)}</span><span class="cont">${esc(r.secao_efetivo)}</span></div>
+      <p>${esc(r.texto)}</p>
+      <div class="fr-acoes"><button class="mini" data-fe="${esc(r.id)}">Editar</button><button class="mini perigo" data-fx="${esc(r.id)}">Excluir</button></div></div>`).join('')}
+  </section>`).join('') || '<p class="cont">Nenhum lançamento neste mês.</p>';
+}
+
+function abrirFreq() {
+  if (!$('#fMes').value) $('#fMes').value = isoData(new Date()).slice(0, 7);
+  montarFormFreq(); $('#fData').value = ''; ajustarMes();
+  $('#dFreq').showModal();
+}
+$('#conteudo').addEventListener('click', e => { if (e.target.closest('[data-freq]')) abrirFreq(); });
+$('#fMes').onchange = ajustarMes;
+$('#fFiltro').onchange = listarFreq;
+
+$('#fTipos').addEventListener('change', e => {
+  const c = e.target.closest('input[type=checkbox]'); if (!c) return;
+  const bl = blocoFreq(c.value), ta = bl.querySelector('textarea');
+  if (c.checked && !$('#fPol').value) { c.checked = false; return aviso('Selecione o policial do efetivo primeiro.', 1); }
+  bl.querySelector('.tp-corpo').hidden = !c.checked;
+  if (!c.checked) return;
+  delete ta.dataset.editado; atualizarTexto(c.value, true);
+  if (c.value === 'meio') atualizarOrdinal();
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+});
+$('#fTipos').addEventListener('input', e => {
+  const bl = e.target.closest('[data-t]'); if (!bl) return;
+  if (e.target.tagName === 'TEXTAREA') e.target.dataset.editado = 1; else atualizarTexto(bl.dataset.t);
+});
+$('#fPol').onchange = () => {
+  marcados().forEach(id => atualizarTexto(id));
+  if (marcados().includes('meio')) atualizarOrdinal();
+};
+$('#fData').onchange = () => { if (marcados().includes('meio')) atualizarOrdinal(); };
+
+$('#fFreq').onsubmit = async e => {
+  e.preventDefault();
+  const b = $('button.btn', e.target), data = $('#fData').value, pol = $('#fPol').value, ids = marcados();
+  if (!pol) return aviso('Selecione o policial do efetivo.', 1);
+  if (!ids.length) return aviso('Marque ao menos uma opção de lançamento.', 1);
+  for (const id of ids) {
+    const bl = blocoFreq(id);
+    if (tipoFreq(id).horas && (!bl.querySelector('[name=ini]').value || !bl.querySelector('[name=fim]').value))
+      return aviso(`Informe o horário de início e de término em "${tipoFreq(id).nome}".`, 1);
+    if (!bl.querySelector('textarea').value.trim()) return aviso(`O texto de "${tipoFreq(id).nome}" está vazio.`, 1);
+  }
+  b.disabled = true;
+  try {
+    if (ids.includes('meio')) {
+      const n = await contarMeios(pol, data);
+      if (n >= 2) return aviso('Este policial já tem 2 Meios Expedientes lançados nesta semana.', 1);
+      if (`${n + 1}º` !== freq.ord) { await atualizarOrdinal(); atualizarTexto('meio', true); return aviso('A numeração do Meio Expediente foi atualizada. Confira o texto e registre novamente.', 1); }
+    }
+    if (!await confirmarSenha(`Registrar ${ids.length} lançamento(s) de frequência de ${pol} em ${fmtData(data)}.`)) return;
+    const linhas = ids.map(id => ({ data, policial: pol, secao_efetivo: grupoDe(pol), tipo: id,
+      texto: blocoFreq(id).querySelector('textarea').value.trim(), registrado_por: usuario.email }));
+    const { error } = await db.from('frequencia_pm').insert(linhas);
+    if (error) throw error;
+    aviso('Lançamento registrado.');
+    montarFormFreq(); $('#fPol').value = pol;
+    carregarFreq();
+  } catch (err) { console.error(err); aviso('Não foi possível registrar. Verifique sua permissão.', 1); }
+  finally { b.disabled = false; }
+};
+
+$('#fLista').addEventListener('click', async e => {
+  const bEd = e.target.closest('[data-fe]'), bEx = e.target.closest('[data-fx]');
+  if (!bEd && !bEx) return;
+  const r = freq.lista.find(x => String(x.id) === (bEd || bEx).dataset[bEd ? 'fe' : 'fx']);
+  if (!r) return;
+  const nome = tipoFreq(r.tipo)?.nome || r.tipo, ref = `${nome} de ${r.policial} em ${fmtData(r.data)}`;
+  if (bEd) {
+    if (!await confirmarSenha(`Editar lançamento: ${ref}.`)) return;
+    freq.editando = r;
+    $('#feTitulo').textContent = `Editar: ${nome}`;
+    $('#feData').value = r.data; $('#feTexto').value = r.texto;
+    $('#dFreqEd').showModal();
+  } else {
+    if (!await confirmarSenha(`Excluir lançamento: ${ref}. O registro sai da lista e fica guardado no histórico.`)) return;
+    const { error } = await db.from('frequencia_pm').update({ excluido: true }).eq('id', r.id);
+    if (error) return aviso('Não foi possível excluir. Verifique sua permissão.', 1);
+    aviso('Lançamento excluído.'); carregarFreq();
+  }
+});
+
+$('#fFreqEd').onsubmit = async e => {
+  e.preventDefault();
+  const { error } = await db.from('frequencia_pm').update({ data: $('#feData').value, texto: $('#feTexto').value.trim() }).eq('id', freq.editando.id);
+  if (error) return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
+  $('#dFreqEd').close(); aviso('Lançamento atualizado.'); carregarFreq();
 };
 
 /* ---------- Confirmação por senha (para editar e excluir) ---------- */
