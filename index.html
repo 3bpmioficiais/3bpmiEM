@@ -300,7 +300,7 @@ const SECOES = {
     {form:'evento'},
     {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
-  sjd: {nome:'SPJMD · Seç PJMD', itens:[{inq:'IPM'},{inq:'IP'}]}
+  sjd: {nome:'SPJMD · Seç PJMD', itens:[{inq:'IPM'},{inq:'IP'},{inq:'Sindicância'}]}
 };
 
 /* =====================================================================
@@ -389,7 +389,7 @@ $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) loc
 function desenharItem(i) {
   if (i.freq) return `<div class="card"><h2>CONTROLE DE FREQUÊNCIA</h2><p class="cont">Lançamentos de folgas, meios-expedientes, inversões e demais alterações de escala.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
   if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
-  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'IINQUÉRITO POLICIAL MILITAR - IPM' : 'INQUÉRITO POLICIAL - IP'}</h2>
+  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'INQUÉRITO POLICIAL MILITAR - IPM' : i.inq === 'IP' ? 'INQUÉRITO POLICIAL - IP' : 'SINDICÂNCIA'}</h2>
     <form class="col" data-inq="${i.inq}">
       <label>Data de Instauração<input type="date" name="data" required></label>
       <label>Assunto<textarea name="assunto" required></textarea></label>
@@ -427,7 +427,7 @@ async function enviarForm(f) {
   aviso(def.ok); f.reset();
 }
 
-/* ---------- Inquéritos (IPM / IP) ---------- */
+/* ---------- Inquéritos (IPM / IP / SINDICÂNCIA) ---------- */
 async function cadastrarInq(f) {
   const t = f.dataset.inq;
   const { data, error } = await db.from('inqueritos_pm')
@@ -439,7 +439,7 @@ async function cadastrarInq(f) {
 }
 
 async function contar() {
-  for (const t of ['IPM', 'IP']) {
+  for (const t of ['IPM', 'IP', 'Sindicância']) {
     const el = $('#cont' + t); if (!el) continue;
     const { count } = await db.from('inqueritos_pm').select('*', { count: 'exact', head: true }).eq('tipo', t).eq('excluido', false);
     el.textContent = count ?? '-';
