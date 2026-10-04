@@ -291,6 +291,7 @@ const FORMS = {
   }
 };
 
+// Seções com o Card do Numerador de Documentos posicionado ao lado dos outros menus
 const SECOES = {
   oficiais: {nome:'Oficiais - EM · CFP', itens:[
     {form:'folga'},
@@ -299,26 +300,31 @@ const SECOES = {
   ]},
   p1: {nome:'P/1 · Seç Pes', itens:[
     {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'},
-    {freq:true}
+    {freq:true},
+    {numerador:true}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
     {form:'operacao'},
     {link:'CALENDÁRIO DE OPERAÇÕES', texto:'Calendário de Operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'},
-    {freq:true}
+    {freq:true},
+    {numerador:true}
   ]},
   p4: {nome:'P/4 · Seç Log', itens:[
     {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'},
-    {freq:true}
+    {freq:true},
+    {numerador:true}
   ]},
   p5: {nome:'P/5 · Seç ComSoc', itens:[
     {form:'evento'},
-    {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'},
+    {numerador:true}
   ]},
   sjd: {nome:'SPJMD · Seç PJMD', itens:[
     {inq:'IPM'},
     {inq:'IP'},
     {inq:'Sindicância'},
-    {freq:true}
+    {freq:true},
+    {numerador:true}
   ]}
 };
 window.SECOES = SECOES;
@@ -384,7 +390,6 @@ async function iniciar() {
   $('#login').hidden = true;
   $('#usuario').textContent = usuario.email;
   $('#sair').hidden = false;
-  $('#btnNumerador').hidden = false;
   montar();
   vigiarInatividade();
 }
@@ -432,6 +437,10 @@ function abrir(k) {
   $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   contar();
+
+  // Oculta o botão do cabeçalho se estiver na aba de Oficiais
+  const btnNum = $('#btnNumerador');
+  if (btnNum) btnNum.hidden = (k === 'oficiais');
 }
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
@@ -574,7 +583,7 @@ window.confirmarSenha = confirmarSenha;
 document.addEventListener('click', e => { const b = e.target.closest('[data-fechar]'); if (b) b.closest('dialog').close('cancel'); });
 
 iniciar();
-</script> <!-- Tag fechada corretamente aqui! -->
+</script>
 
 <!-- Scripts complementares -->
 <script src="controle_frequencia.js"></script>
