@@ -192,7 +192,7 @@
 
             <div class="dupla">
               <label>Destino
-                <input type="text" id="numInteressado" placeholder="Ex: Cmt do Batalhão, Seção de Pessoal, etc.">
+                <input type="text" id="numInteressado" placeholder="Ex: Div Op">
               </label>
               <label>Numeração Prevista:
                 <input type="text" id="numPrevisao" readonly style="color:var(--ok);font-weight:700">
