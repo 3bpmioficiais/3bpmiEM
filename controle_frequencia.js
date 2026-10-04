@@ -32,7 +32,7 @@
       ]))
     },
     p1: {
-      'P/1': ['Cap PM André Luís','1º Ten PM Feitosa','1º Sgt PM Pazelli','Cb PM Antônio','Cb PM Ana Cláudia','Sd PM Yamada']
+      'P/1': ['Cap PM André Luís','1º Ten PM Feitosa','1º Sgt PM Pazelli','Cb PM Antônio','Cb PM Ana Cláudia','Sd PM Yamada'],
       'P/5':['Cb PM Marcari','Sd PM Pereira','Sd PM Breno']
     },
     p3: {
@@ -44,8 +44,8 @@
       'P/4': ['1º Ten PM Borgo','2º Sgt PM Ricardo','Cb PM Scarparo','Cb PM Zocaratto','Cb Pm Duarte','Cb PM Adilson','Cb PM Zafalon','Cb PM Mingarino']
     },
     sjd: {
-      'SPJMD': ['Cap PM Del Vecchio','Subten PM Boleta','Subten PM Nomura','1º Sgt PM Kill','Cb PM Alves','Sd PM Mitidieri']
-      'MARIA DA PENHA': ['Sd PM Oliveira','Sd PM Delfino']
+      'SPJMD': ['Cap PM Del Vecchio','Subten PM Boleta','Subten PM Nomura','1º Sgt PM Kill','Cb PM Alves','Sd PM Mitidieri'],
+      'MARIA DA PENHA': ['Sd PM Oliveira','Sd PM Delfino'],
       'NUMEC': ['Cb PM Paulo']
     }
   };
