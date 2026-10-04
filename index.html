@@ -247,7 +247,7 @@ const CONFIG = {
   SUPABASE_URL: 'https://xxzmlddpmmgwhbotutsj.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1sZGRwbW1nd2hib3R1dHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTY3MjksImV4cCI6MjEwNjE3MjcyOX0.7d1iqK1Se3luzS6aZI38enGUQHXOXpjwlnyzPNZHAiI',
   URL_FOLGAS: 'https://script.google.com/macros/s/AKfycby6MaQTwhw_QePtaJLhhvJzKOxK7nVd8d5wFGhRj6WNh_MoH0YfjpvBoELPaJ8PySzz0g/exec',
-  URL_OPERACOES: 'https://script.google.com/macros/s/AKfycbwU2bZX56SWM4Sc3hCc8JrAMN2sZz2H-R-7o_vIYRcdqRTduQnvyhuXpLObkvtNOHjv/exec',
+  URL_OPERACOES: 'https://script.google.com/macros/s/AKfycbyffyuKCzgSxc-bCBlIS9YvFfwzomU34w10Y5lqKr37FJ02GkdXYtMdGkNs0as72LiQ/exec',
   URL_EVENTOS: 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec',
   UNIDADE: '3BPMI',            // aparece na numeração: 3BPMI - 012/06/2026
   CODIGO: '06',
@@ -275,14 +275,15 @@ const FORMS = {
     ],
     validar: d => d.tipo_folga === 'Outra' && !d.especifique.trim() ? 'Preencha o campo "Especifique".' : null
   },
-  operacao: {
+    operacao: {
     titulo: 'CRIAR OPERAÇÃO', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
     ok: 'Operação criada e registrada no calendário.',
     campos: [
       {id:'data_inicio', label:'Data de início', tipo:'date', req:1},
       {id:'data_termino', label:'Data de término', tipo:'date', req:1},
-      {id:'nome_operacao', label:'Nome da operação', tipo:'text', req:1, ph:'Ex: Operação Impacto'},
-      {id:'descricao_operacao', label:'Descrição', tipo:'textarea', ph:'Detalhamento da operação'}
+      {id:'ordem_operacoes', label:'Ordem de Operações Nº', tipo:'text', ph:'Ex: CoordOpPM-001/60/26'},
+      {id:'nome_operacao', label:'Nome da Operação', tipo:'text', req:1, ph:'Ex: Operação Impacto'},
+      {id:'descricao_operacao', label:'Descrição', tipo:'textarea', ph:'Descrição da Operação'}
     ],
     validar: d => d.data_termino < d.data_inicio ? 'A data de término não pode ser anterior ao início.' : null
   },
@@ -300,15 +301,17 @@ const FORMS = {
 
 // Seções e o que aparece em cada uma. Tipos de item: form, link, inq
 const SECOES = {
-  p1: {nome:'P/1 · Seç Pes', itens:[
+  oficiais: {nome:'Oficiais - EM · CFP', itens:[
     {form:'folga'},
     {link:'CALENDÁRIO DE FOLGAS', texto:'Folgas programadas dos Oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
-    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
+  ]},
+  p1: {nome:'P/1 · Seç Pes', itens:[
+        {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
     {form:'operacao'},
-    {freq:true},
-    {link:'CALENDÁRIO DE OPERAÇÕES', texto:'Agenda de Operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {link:'CALENDÁRIO DE OPERAÇÕES', texto:'Calendário de Operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'},
+    {freq:true}
   ]},
   p4: {nome:'P/4 · Seç Log', itens:[
     {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
@@ -612,7 +615,7 @@ function montarFormFreq() {
   $('#fTipos').innerHTML = TIPOS_FREQ.map(t => `<div class="tp" data-t="${t.id}">
     <label class="chk"><input type="checkbox" value="${t.id}">${esc(t.nome)}</label>
     <div class="tp-corpo" hidden>
-      ${t.horas ? '<div class="horas"><label>Início<input type="time" name="ini"></label><label>Término<input type="time" name="fim"></label></div>' : ''}
+      ${t.horas ? '<div class="horas"><label>Trabalha das:<input type="time" name="ini"></label><label>Às:<input type="time" name="fim"></label></div>' : ''}
       ${t.id === 'meio' ? '<p class="cont" data-aviso></p>' : ''}
       <textarea aria-label="Texto: ${esc(t.nome)}"></textarea>
     </div></div>`).join('');
