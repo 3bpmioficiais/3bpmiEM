@@ -196,9 +196,9 @@ th{position:sticky;top:0;background:var(--panel)}
   </form>
 </dialog>
 
-<!-- Controle de Frequência (P/3) -->
+<!-- Controle de Frequência -->
 <dialog id="dFreq">
-  <div class="topo"><h2>Controle de Frequência</h2><button class="mini" data-fechar>Fechar</button></div>
+  <div class="topo"><h2 id="dFreqTitulo">Controle de Frequência</h2><button class="mini" data-fechar>Fechar</button></div>
   <div class="dupla"><label>Mês de referência<select id="fMesSel"></select></label><label>Ano<select id="fAnoSel"></select></label></div>
   <form id="fFreq" class="fr-form">
     <h3>Novo lançamento</h3>
@@ -261,6 +261,35 @@ const NOMES = [
   'Ten PM Derick','Ten PM Chevchuk','Ten PM Zanardo','Ten PM Larissa Muniz','Ten PM Borgo'
 ];
 
+// Efetivo de cada seção para o Controle de Frequência
+// (A seção P/3 está mantida exatamente com os mesmos policiais e grupos)
+const EFETIVOS_POR_SECAO = {
+  oficiais: {
+    'Oficiais': NOMES
+  },
+  p1: {
+    'P/1': ['Cap PM André Luís','1º Ten PM Feitosa','1º Sgt PM Pazelli','Cb PM Antônio','Cb PM Ana Cláudia','Sd PM Yamada'],
+    'P/5': ['Cb PM Marcari','Sd PM Pereira','Sd PM Breno']
+  },
+  p3: {
+    'P/3': ['Cap PM 990113-2 Cravero','2º Sgt PM 147149-0 Brito','Cb PM 980440-4 Alcebíades','Cb PM 152866-1 Neres','Cb PM 144936-2 Fukuda'],
+    'GEOCRIMINAL': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
+    'DCAP': ['1º Sgt PM 980576-1 Bino','Cb PM 134666-A Ribas','Cb PM 149535-6 Cognetti','Sd PM 192404-4 Gimenes']
+  },
+  p4: {
+    'P/4': ['1º Ten PM Borgo','2º Sgt PM Ricardo','Cb PM Molezine','Cb PM Scarparo','Cb PM Zocaratto','Cb PM Duarte','Cb PM Adilson','Cb PM Zafalon','Cb PM Mingarino'],
+    'RESERVA DE ARMAS': ['Cb PM Dellaspora','Cb PM Fregnani','Cb PM Graton','Cb PM Carlos','Cb PM Rosseto']
+  },
+  sjd: {
+    'SPJMD': ['Cap PM Del Vecchio','Subten PM Boleta','Subten PM Nomura','1º Sgt PM Kill','Cb PM Alves','Sd PM Mitidieri'],
+    'MARIA DA PENHA': ['Sd PM Oliveira','Sd PM Delfino'],
+    'NUMEC': ['Cb PM Paulo']
+  }
+};
+
+// Retrocompatibilidade
+const EFETIVO = EFETIVOS_POR_SECAO.p3;
+
 // Formulários que enviam para o Google Agenda (cada "id" é o nome do campo enviado)
 const FORMS = {
   folga: {
@@ -268,19 +297,19 @@ const FORMS = {
     ok: 'Folga enviada e registrada no calendário.',
     campos: [
       {id:'nome', label:'Nome', tipo:'select', opcoes:NOMES, req:1},
-      {id:'data_folga', label:'Data desejada', tipo:'date', req:1},
-      {id:'tipo_folga', label:'Tipo de folga', tipo:'select', req:1,
+      {id:'data_folga', label:'Data Desejada', tipo:'date', req:1},
+      {id:'tipo_folga', label:'Tipo de Folga', tipo:'select', req:1,
        opcoes:['Mensal','Produtividade','Horas Passadas','Concessão','Semanal','Meio Expediente','Outra']},
-      {id:'especifique', label:'Especifique (obrigatório se o tipo for Outra)', tipo:'text'}
+      {id:'especifique', label:'Especifique', tipo:'text',ph:'Ex: Semana 01JAN a 05JAN26, Folga Mensal'}
     ],
     validar: d => d.tipo_folga === 'Outra' && !d.especifique.trim() ? 'Preencha o campo "Especifique".' : null
   },
-    operacao: {
+  operacao: {
     titulo: 'CRIAR OPERAÇÃO', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
     ok: 'Operação criada e registrada no calendário.',
     campos: [
-      {id:'data_inicio', label:'Data de início', tipo:'date', req:1},
-      {id:'data_termino', label:'Data de término', tipo:'date', req:1},
+      {id:'data_inicio', label:'Data Início', tipo:'date', req:1},
+      {id:'data_termino', label:'Data Término', tipo:'date', req:1},
       {id:'ordem_operacoes', label:'Ordem de Operações Nº', tipo:'text', ph:'Ex: CoordOpPM-001/60/26'},
       {id:'nome_operacao', label:'Nome da Operação', tipo:'text', req:1, ph:'Ex: Operação Impacto'},
       {id:'descricao_operacao', label:'Descrição', tipo:'textarea', ph:'Descrição da Operação'}
@@ -291,22 +320,24 @@ const FORMS = {
     titulo: 'AGENDAR SOLENIDADE / EVENTO', botao: 'Registrar evento', url: CONFIG.URL_EVENTOS, acao: 'solenidade',
     ok: 'Evento registrado no calendário.',
     campos: [
-      {id:'data_evento', label:'Data do evento', tipo:'date', req:1},
-      {id:'nome_evento', label:'Nome da solenidade ou evento', tipo:'text', req:1, ph:'Ex: Passagem de Comando'},
+      {id:'data_evento', label:'Data do Evento', tipo:'date', req:1},
+      {id:'nome_evento', label:'Nome da Solenidade ou Evento', tipo:'text', req:1, ph:'Ex: Passagem de Comando'},
       {id:'local_evento', label:'Local', tipo:'text'},
-      {id:'descricao_evento', label:'Descrição e observações', tipo:'textarea'}
+      {id:'descricao_evento', label:'Descrição e Observações', tipo:'textarea'}
     ]
   }
 };
 
-// Seções e o que aparece em cada uma. Tipos de item: form, link, inq
+// Seções e o que aparece em cada uma (P/5 mantida sem Frequência)
 const SECOES = {
   oficiais: {nome:'Oficiais - EM · CFP', itens:[
     {form:'folga'},
     {link:'CALENDÁRIO DE FOLGAS', texto:'Folgas programadas dos Oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
+    {freq:true},
+    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
   ]},
   p1: {nome:'P/1 · Seç Pes', itens:[
-        {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
+    {freq:true}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
     {form:'operacao'},
@@ -314,13 +345,19 @@ const SECOES = {
     {freq:true}
   ]},
   p4: {nome:'P/4 · Seç Log', itens:[
-    {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
+    {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'},
+    {freq:true}
   ]},
   p5: {nome:'P/5 · Seç ComSoc', itens:[
     {form:'evento'},
     {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
   ]},
-  sjd: {nome:'SPJMD · Seç PJMD', itens:[{inq:'IPM'},{inq:'IP'},{inq:'Sindicância'}]}
+  sjd: {nome:'SPJMD · Seç PJMD', itens:[
+    {inq:'IPM'},
+    {inq:'IP'},
+    {inq:'Sindicância'},
+    {freq:true}
+  ]}
 };
 
 /* =====================================================================
@@ -336,11 +373,11 @@ if (!window.supabase) {
 }
 const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 let usuario = null, perfil = null, tipoAtual = '', registros = [], editando = null;
+let secaoAtual = 'p3';
 
 function aviso(msg, erro) {
   const box = $('#toasts'), t = document.createElement('div');
   t.className = 'toast' + (erro ? ' erro' : ''); t.textContent = msg; box.append(t);
-  // popover vai para a "camada superior": sem isso o aviso ficaria atrás de janelas <dialog> abertas
   try { if (box.showPopover) { if (box.matches(':popover-open')) box.hidePopover(); box.showPopover(); } } catch {}
   setTimeout(() => { t.remove(); if (!box.children.length) try { box.hidePopover?.(); } catch {} }, 5000);
 }
@@ -399,7 +436,6 @@ function vigiarInatividade() {
   const zerar = () => { marcarUso(); clearTimeout(relogio); relogio = setTimeout(sair, CONFIG.MINUTOS_INATIVIDADE * 60000); };
   const lim = () => { const n = Date.now(); if (n - ult > 1000) { ult = n; zerar(); } };
   ['click','keydown','mousemove','pointerdown','touchstart','touchmove','scroll'].forEach(ev => addEventListener(ev, lim, { passive: true, capture: true }));
-  // celular em segundo plano suspende timers: confere o relógio ao voltar para a aba
   document.addEventListener('visibilitychange', () => { if (!document.hidden && !usoRecente()) sair(); });
   db.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT' && usuario) location.reload(); });
   zerar();
@@ -420,6 +456,7 @@ function abrir(k) {
   const chaves = permitidas();
   if (!chaves.includes(k)) k = chaves[0];
   if (!k) return;
+  secaoAtual = k;
   document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', b.dataset.aba === k));
   $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
@@ -541,15 +578,9 @@ $('#fEd').onsubmit = async e => {
   $('#dEd').close(); aviso('Registro atualizado.'); carregar();
 };
 
-/* ---------- Controle de Frequência (P/3) ---------- */
-const EFETIVO = {
-  'P/3': ['Cap PM 990113-2 Cravero','2º Sgt PM 147149-0 Brito','Cb PM 980440-4 Alcebíades','Cb PM 152866-1 Neres','Cb PM 144936-2 Fukuda'],
-  'Geocriminal': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
-  'DCap': ['1º Sgt PM 980576-1 Bino','Cb PM 134666-A Ribas','Cb PM 149535-6 Cognetti','Sd PM 192404-4 Gimenes']
-};
+/* ---------- Controle de Frequência ---------- */
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const DIAS = ['dom','seg','ter','qua','qui','sex','sáb'];
-// {n}=NomeDoPolicial. Textos exatamente como definidos; o que termina em espaço é completado pelo usuário.
 const TIPOS_FREQ = [
   {id:'aglutinacao',   nome:'Aglutinação',                texto:(n)    => `${n} não trabalha neste dia, aglutinação dos 02 (dois) Meios Expedientes da semana `},
   {id:'produtividade', nome:'Folga Produtividade',        texto:(n)    => `${n} não trabalha neste dia, usufruindo folga produtividade`},
@@ -561,19 +592,34 @@ const TIPOS_FREQ = [
   {id:'compensacao',   nome:'Compensação',                texto:(n)    => `${n} não trabalha neste dia, usufruindo Folga Compensação referente a `}
 ];
 const tipoFreq = id => TIPOS_FREQ.find(t => t.id === id);
-const grupoDe = pol => Object.keys(EFETIVO).find(g => EFETIVO[g].includes(pol)) || '';
+
+// Retorna o efetivo da aba ativa no momento
+const efetivoAtual = () => EFETIVOS_POR_SECAO[secaoAtual] || EFETIVOS_POR_SECAO.p3;
+
+// Descobre o grupo/seção pertencente ao policial selecionado
+const grupoDe = pol => {
+  const ef = efetivoAtual();
+  const g = Object.keys(ef).find(k => ef[k].includes(pol));
+  if (g) return g;
+  for (const s of Object.values(EFETIVOS_POR_SECAO)) {
+    const achou = Object.keys(s).find(k => s[k].includes(pol));
+    if (achou) return achou;
+  }
+  return '';
+};
+
 const hh = v => v ? v.replace(':', 'h') : 'XXhXX';
 const dataLocal = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const isoData = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 let freq = { lista: [], ord: '1º', editando: null };
 
-// Segunda a sexta da semana da data informada (sábado/domingo ficam na semana que termina)
 function semanaUtil(s) {
   const d = dataLocal(s), seg = new Date(d);
   seg.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   const sex = new Date(seg); sex.setDate(seg.getDate() + 4);
   return [isoData(seg), isoData(sex)];
 }
+
 async function contarMeios(pol, data) {
   const [a, b] = semanaUtil(data);
   const { data: r, error } = await db.from('frequencia_pm').select('id').eq('policial', pol).eq('tipo', 'meio').eq('excluido', false).gte('data', a).lte('data', b);
@@ -589,7 +635,6 @@ function gerarTexto(id) {
 function atualizarTexto(id, forcar) {
   const ta = blocoFreq(id).querySelector('textarea'), novo = gerarTexto(id), base = ta.dataset.base || '', pol = $('#fPol').value;
   if (forcar || !ta.dataset.editado) { ta.value = novo; delete ta.dataset.editado; }
-  // texto já editado: preserva o que o usuário completou e troca só a parte gerada (nome/horário)
   else if (base && ta.value.startsWith(base)) ta.value = novo + ta.value.slice(base.length);
   else if (freq.pol && pol && freq.pol !== pol) ta.value = ta.value.split(freq.pol).join(pol);
   ta.dataset.base = novo;
@@ -608,9 +653,10 @@ async function atualizarOrdinal() {
 }
 
 function montarFormFreq() {
-  $('#fPol').innerHTML = '<option value="">Selecione</option>' + Object.entries(EFETIVO).map(([g, l]) =>
+  const ef = efetivoAtual();
+  $('#fPol').innerHTML = '<option value="">Selecione</option>' + Object.entries(ef).map(([g, l]) =>
     `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
-  $('#fFiltro').innerHTML = '<option value="">Todo o efetivo</option>' + Object.entries(EFETIVO).map(([g, l]) =>
+  $('#fFiltro').innerHTML = '<option value="">Todo o efetivo</option>' + Object.entries(ef).map(([g, l]) =>
     `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
   $('#fTipos').innerHTML = TIPOS_FREQ.map(t => `<div class="tp" data-t="${t.id}">
     <label class="chk"><input type="checkbox" value="${t.id}">${esc(t.nome)}</label>
@@ -654,7 +700,10 @@ async function carregarFreq() {
 
 function listarFreq() {
   const f = $('#fFiltro').value;
-  const l = freq.lista.filter(r => !f || r.policial === f);
+  const ef = efetivoAtual();
+  const todosPol = Object.values(ef).flat();
+  // Mostra apenas os lançamentos dos policiais pertencentes à seção aberta
+  const l = freq.lista.filter(r => todosPol.includes(r.policial) && (!f || r.policial === f));
   const dias = {};
   l.forEach(r => (dias[r.data] ||= []).push(r));
   $('#fLista').innerHTML = Object.keys(dias).sort().map(d => `<section class="fr-dia">
@@ -667,6 +716,8 @@ function listarFreq() {
 }
 
 function abrirFreq() {
+  const t = $('#dFreqTitulo');
+  if (t) t.textContent = secaoAtual === 'p3' ? 'Controle de Frequência' : `Controle de Frequência (${SECOES[secaoAtual]?.nome.split('·')[0].trim() || ''})`;
   montarMeses();
   montarFormFreq(); $('#fData').value = ''; ajustarMes();
   $('#dFreq').showModal();
@@ -764,7 +815,6 @@ function confirmarSenha(texto) {
     $('#fSenha').onsubmit = async e => {
       e.preventDefault();
       const b = $('#bSenha'); b.disabled = true;
-      // Cliente temporário: confere a senha sem trocar a sessão de quem está logado
       const teste = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'gem-verificacao' } });
       const { error } = await teste.auth.signInWithPassword({ email: usuario.email, password: $('#sSenha').value });
       b.disabled = false;
