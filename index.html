@@ -445,7 +445,7 @@ function abrir(k) {
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
 function desenharItem(i) {
-  if (i.numerador) return `<div class="card"><h2>NUMERADOR ELETRÔNICO</h2><p class="cont">Emissão e controle sequencial de ofícios, memorandos, ordens e mensagens.</p><button class="btn" data-numerador>Abrir Numerador</button></div>`;
+  if (i.numerador) return `<div class="card"><h2>NUMERADOR ELETRÔNICO</h2><p class="cont">Emissão e Controle Sequencial de Documentos.</p><button class="btn" data-numerador>Abrir Numerador</button></div>`;
   if (i.freq) return `<div class="card"><h2>CONTROLE DE FREQUÊNCIA</h2><p class="cont">Lançamentos de folgas, meios-expedientes, inversões e demais alterações de escala.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
   if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
   if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'INQUÉRITO POLICIAL MILITAR - IPM' : i.inq === 'IP' ? 'INQUÉRITO POLICIAL - IP' : 'SINDICÂNCIA'}</h2>
