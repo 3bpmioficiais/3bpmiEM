@@ -385,6 +385,7 @@ async function iniciar() {
   $('#login').hidden = true;
   $('#usuario').textContent = usuario.email;
   $('#sair').hidden = false;
+  $('#btnNumerador').hidden = false;
   montar();
   vigiarInatividade();
 }
@@ -573,9 +574,9 @@ window.confirmarSenha = confirmarSenha;
 document.addEventListener('click', e => { const b = e.target.closest('[data-fechar]'); if (b) b.closest('dialog').close('cancel'); });
 
 iniciar();
-</script>
-
-<!-- Script exclusivo do Controle de Frequência -->
+  
+<!-- Scripts complementares -->
 <script src="controle_frequencia.js"></script>
+<script src="numerador.js"></script>
 </body>
 </html>
