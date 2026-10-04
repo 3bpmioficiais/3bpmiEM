@@ -61,7 +61,8 @@
     return `3BPMI-${num}/${cod}/${r.ano}`;
   };
 
-  let docs = { lista: [], editando: null };
+  // Armazena todos os documentos do ano carregados para filtragem instantânea
+  let docs = { todos: [], editando: null };
 
   // Busca o próximo número sequencial exclusivo da seção, tipo e ano
   async function obterProximoNumero(tipo, ano, secao) {
@@ -101,10 +102,9 @@
     }
   }
 
-  // Carrega apenas os documentos da seção ativa
+  // Carrega todos os documentos do ano da seção ativa do banco
   async function carregarDocs() {
     const ano = parseInt($('#numFiltroAno').value, 10);
-    const tipoFiltro = $('#numFiltroTipo').value;
     const secao = obterSecaoAtual();
     $('#numCorpo').innerHTML = '<tr><td colspan="4" class="cont">Carregando documentos…</td></tr>';
 
@@ -114,7 +114,7 @@
       return;
     }
 
-    let query = dbClient
+    const { data, error } = await dbClient
       .from('documentos_pm')
       .select('*')
       .eq('excluido', false)
@@ -122,30 +122,50 @@
       .eq('secao', secao)
       .order('numero', { ascending: false });
 
-    if (tipoFiltro) {
-      query = query.eq('tipo', tipoFiltro);
-    }
-
-    const { data, error } = await query;
     if (error) {
       $('#numCorpo').innerHTML = '<tr><td colspan="4" class="msg-erro">Erro ao carregar documentos.</td></tr>';
       return;
     }
 
-    docs.lista = data || [];
+    docs.todos = data || [];
     listarDocs();
   }
 
+  // Filtragem instantânea via Lista Suspensa e Busca
   function listarDocs() {
+    const tipoFiltro = $('#numFiltroTipo')?.value || '';
     const q = ($('#numBusca')?.value || '').toLowerCase().trim();
-    const filtrados = docs.lista.filter(r => {
-      const numFmt = fmtDocNum(r).toLowerCase();
-      const txt = `${numFmt} ${r.tipo} ${fmtData(r.data)} ${r.assunto || ''} ${r.interessado || ''}`.toLowerCase();
-      return txt.includes(q);
+    const sec = obterSecaoAtual();
+    const secObj = (typeof SECOES !== 'undefined' && SECOES[sec]) ? SECOES[sec] : null;
+    const nomeSec = secObj ? secObj.nome.split('·')[0].trim() : sec.toUpperCase();
+
+    // Aplica o filtro da lista suspensa de Tipo e da busca textual
+    const filtrados = docs.todos.filter(r => {
+      if (tipoFiltro && r.tipo !== tipoFiltro) return false;
+
+      if (q) {
+        const numFmt = fmtDocNum(r).toLowerCase();
+        const txt = `${numFmt} ${r.tipo} ${fmtData(r.data)} ${r.assunto || ''} ${r.interessado || ''}`.toLowerCase();
+        if (!txt.includes(q)) return false;
+      }
+      return true;
     });
 
+    // Atualiza contador informativo
+    const contEl = $('#numContador');
+    if (contEl) {
+      if (tipoFiltro) {
+        contEl.textContent = `Exibindo ${filtrados.length} ${tipoFiltro}(s) na seção ${nomeSec}.`;
+      } else {
+        contEl.textContent = `Exibindo todos os ${filtrados.length} documento(s) da seção ${nomeSec}.`;
+      }
+    }
+
     if (!filtrados.length) {
-      $('#numCorpo').innerHTML = '<tr><td colspan="4" class="cont">Nenhum documento encontrado nesta seção.</td></tr>';
+      const msg = tipoFiltro 
+        ? `Nenhum documento do tipo "${tipoFiltro}" encontrado nesta seção.`
+        : 'Nenhum documento encontrado com os filtros atuais.';
+      $('#numCorpo').innerHTML = `<tr><td colspan="4" class="cont">${msg}</td></tr>`;
       return;
     }
 
@@ -158,7 +178,7 @@
         <td class="nw">${fmtData(r.data)}</td>
         <td>
           <b>${esc(r.assunto)}</b>
-          ${r.interessado ? `<br><small class="cont">Destino: ${esc(r.interessado)}</small>` : ''}
+          ${r.interessado ? `<br><small class="cont">Destinatário/Interessado: ${esc(r.interessado)}</small>` : ''}
         </td>
         <td class="nw">
           <button class="mini" data-ned="${esc(r.id)}">Editar</button>
@@ -180,27 +200,27 @@
           <form id="fNumNovo" class="fr-form">
             <h3>Gerar nova numeração</h3>
             <div class="dupla">
-              <label>Tipo de Documento:
+              <label>Tipo de Documento
                 <select id="numTipo" required>
                   ${TIPOS_DOCS.map(t => `<option value="${t}">${t}</option>`).join('')}
                 </select>
               </label>
-              <label>Data do Documento:
+              <label>Data do Documento
                 <input type="date" id="numData" required>
               </label>
             </div>
 
             <div class="dupla">
-              <label>Destino
-                <input type="text" id="numInteressado" placeholder="Ex: Div Op">
+              <label>Destinatário / Interessado / Referência
+                <input type="text" id="numInteressado" placeholder="Ex: Cmt do Batalhão, Seção de Pessoal, etc.">
               </label>
-              <label>Numeração Prevista:
+              <label>Próximo número previsto
                 <input type="text" id="numPrevisao" readonly style="color:var(--ok);font-weight:700">
               </label>
             </div>
 
-            <label>Assunto:
-              <textarea id="numAssunto" required placeholder="Descreva o assunto ou conteúdo do documento"></textarea>
+            <label>Assunto / Ementa
+              <textarea id="numAssunto" required placeholder="Descreva o conteúdo ou finalidade do documento"></textarea>
             </label>
 
             <div class="acoes">
@@ -208,18 +228,25 @@
             </div>
           </form>
 
-          <div class="fr-topo">
+          <div class="fr-topo" style="margin-top:20px">
             <h3>Documentos Gerados nesta Seção</h3>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <select id="numFiltroTipo" aria-label="Filtrar por tipo de documento">
-                <option value="">Todos os tipos</option>
-                ${TIPOS_DOCS.map(t => `<option value="${t}">${t}</option>`).join('')}
-              </select>
-              <select id="numFiltroAno" aria-label="Filtrar por ano"></select>
-            </div>
           </div>
 
-          <input type="search" id="numBusca" placeholder="Buscar por número, data, assunto ou interessado" aria-label="Buscar documento">
+          <!-- Barra de Filtros com Listas Suspensas -->
+          <div class="dupla" style="margin-bottom:10px">
+            <label>Filtrar por Tipo de Documento:
+              <select id="numFiltroTipo" style="font-weight:600">
+                <option value="">Todos os tipos de documentos</option>
+                ${TIPOS_DOCS.map(t => `<option value="${t}">${t}</option>`).join('')}
+              </select>
+            </label>
+            <label>Ano de Referência:
+              <select id="numFiltroAno" style="font-weight:600"></select>
+            </label>
+          </div>
+
+          <input type="search" id="numBusca" placeholder="Buscar por número, assunto ou interessado…" aria-label="Buscar documento">
+          <p class="cont" id="numContador" style="margin:6px 0 10px;font-size:.82rem"></p>
 
           <div class="tw">
             <table>
@@ -295,8 +322,14 @@
 
     $('#numTipo').onchange = atualizarPrevisao;
     $('#numData').onchange = atualizarPrevisao;
-    $('#numFiltroTipo').onchange = carregarDocs;
+
+    // Filtro instantâneo pela lista suspensa de tipo de documento
+    $('#numFiltroTipo').onchange = listarDocs;
+
+    // Mudança de ano recarrega os dados daquele ano do banco
     $('#numFiltroAno').onchange = carregarDocs;
+
+    // Filtro por digitação instantâneo
     $('#numBusca').oninput = listarDocs;
 
     // Gerar numeração
@@ -351,7 +384,7 @@
       if (!bEd && !bEx) return;
 
       const id = (bEd || bEx).dataset[bEd ? 'ned' : 'nex'];
-      const r = docs.lista.find(x => String(x.id) === String(id));
+      const r = docs.todos.find(x => String(x.id) === String(id));
       if (!r) return;
 
       const refDoc = `${r.tipo} Nº ${fmtDocNum(r)}`;
