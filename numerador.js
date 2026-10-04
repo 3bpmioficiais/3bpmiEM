@@ -35,7 +35,15 @@
     'FUTEBOL'
   ];
 
-  // Identifica a aba/seção atualmente aberta no painel
+  // Mapeamento dos códigos oficiais de cada seção
+  const CODIGOS_SECAO = {
+    p1: '01',
+    p3: '03',
+    p4: '04',
+    p5: '05',
+    sjd: '06'
+  };
+
   function obterSecaoAtual() {
     return window.secaoAtual || 
            (typeof secaoAtual !== 'undefined' ? secaoAtual : '') || 
@@ -44,12 +52,18 @@
            'p3';
   }
 
-  const getCodigo = () => (typeof CONFIG !== 'undefined' && CONFIG.CODIGO) ? CONFIG.CODIGO : '06';
-  const fmtDocNum = r => `${String(r.numero).padStart(3, '0')}/${getCodigo()}/${r.ano}`;
+  const getCodigoSecao = (sec) => CODIGOS_SECAO[sec] || '06';
+
+  // Formato: 3BPMI-001/03/2026
+  const fmtDocNum = r => {
+    const cod = getCodigoSecao(r.secao);
+    const num = String(r.numero).padStart(3, '0');
+    return `3BPMI-${num}/${cod}/${r.ano}`;
+  };
 
   let docs = { lista: [], editando: null };
 
-  // Busca o próximo número sequencial EXCLUSIVO da seção, tipo e ano
+  // Busca o próximo número sequencial exclusivo da seção, tipo e ano
   async function obterProximoNumero(tipo, ano, secao) {
     const dbClient = getDb();
     if (!dbClient) return 1;
@@ -79,7 +93,9 @@
     prevEl.value = 'Calculando…';
     try {
       const prox = await obterProximoNumero(tipo, ano, secao);
-      prevEl.value = `${prox < 10 ? '00' : prox < 100 ? '0' : ''}${prox}/${getCodigo()}/${ano}`;
+      const numFmt = String(prox).padStart(3, '0');
+      const cod = getCodigoSecao(secao);
+      prevEl.value = `3BPMI-${numFmt}/${cod}/${ano}`;
     } catch {
       prevEl.value = '---';
     }
@@ -103,7 +119,7 @@
       .select('*')
       .eq('excluido', false)
       .eq('ano', ano)
-      .eq('secao', secao) // Filtra exclusivamente pela seção ativa
+      .eq('secao', secao)
       .order('numero', { ascending: false });
 
     if (tipoFiltro) {
@@ -246,10 +262,15 @@
   }
 
   function abrirNumerador() {
+    const sec = obterSecaoAtual();
+    if (sec === 'oficiais') {
+      getAviso('O Numerador de Documentos não está disponível para a seção de Oficiais.', 1);
+      return;
+    }
+
     garantirDialogs();
     montarFiltroAnos();
 
-    const sec = obterSecaoAtual();
     const secObj = (typeof SECOES !== 'undefined' && SECOES[sec]) ? SECOES[sec] : null;
     const nomeSec = secObj ? secObj.nome.split('·')[0].trim() : sec.toUpperCase();
     const t = $('#dNumTitulo');
