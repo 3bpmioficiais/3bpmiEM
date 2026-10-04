@@ -32,39 +32,21 @@
       ]))
     },
     p1: {
-      'P/1': [
-        'Cap PM André Luís',
-        '1º Ten PM ...',
-        'Subten PM ...',
-        '1º Sgt PM ...',
-        'Cb PM ...',
-        'Sd PM ...'
-      ]
+      'P/1': ['Cap PM André Luís','1º Ten PM Feitosa','1º Sgt PM Pazelli','Cb PM Antônio','Cb PM Ana Cláudia','Sd PM Yamada']
+      'P/5':['Cb PM Marcari','Sd PM Pereira','Sd PM Breno']
     },
     p3: {
       'P/3': ['Cap PM 990113-2 Cravero','2º Sgt PM 147149-0 Brito','Cb PM 980440-4 Alcebíades','Cb PM 152866-1 Neres','Cb PM 144936-2 Fukuda'],
-      'Geocriminal': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
+      'Geocriminal': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','Cb PM 991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
       'DCap': ['1º Sgt PM 980576-1 Bino','Cb PM 134666-A Ribas','Cb PM 149535-6 Cognetti','Sd PM 192404-4 Gimenes']
     },
     p4: {
-      'P/4': [
-        'Cap PM Del Vecchio',
-        '1º Ten PM ...',
-        'Subten PM ...',
-        '1º Sgt PM ...',
-        'Cb PM ...',
-        'Sd PM ...'
-      ]
+      'P/4': ['1º Ten PM Borgo','2º Sgt PM Ricardo','Cb PM Scarparo','Cb PM Zocaratto','Cb Pm Duarte','Cb PM Adilson','Cb PM Zafalon','Cb PM Mingarino']
     },
     sjd: {
-      'SPJMD': [
-        'Maj PM Martins Ribeiro',
-        'Cap PM ...',
-        '1º Ten PM ...',
-        'Subten PM ...',
-        '1º Sgt PM ...',
-        'Cb PM ...'
-      ]
+      'SPJMD': ['Cap PM Del Vecchio','Subten PM Boleta','Subten PM Nomura','1º Sgt PM Kill','Cb PM Alves','Sd PM Mitidieri']
+      'MARIA DA PENHA': ['Sd PM Oliveira','Sd PM Delfino']
+      'NUMEC': ['Cb PM Paulo']
     }
   };
 
