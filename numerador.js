@@ -1,5 +1,5 @@
 /**
- * numerador.js - Módulo exclusivo do Numerador de Documentos
+ * numerador.js - Módulo do Numerador de Documentos por Seção
  * 3º Batalhão de Caçadores
  */
 (() => {
@@ -35,21 +35,31 @@
     'FUTEBOL'
   ];
 
+  // Identifica a aba/seção atualmente aberta no painel
+  function obterSecaoAtual() {
+    return window.secaoAtual || 
+           (typeof secaoAtual !== 'undefined' ? secaoAtual : '') || 
+           document.querySelector('#abas [aria-current="true"]')?.dataset.aba || 
+           location.hash.slice(1) || 
+           'p3';
+  }
+
   const getCodigo = () => (typeof CONFIG !== 'undefined' && CONFIG.CODIGO) ? CONFIG.CODIGO : '06';
   const fmtDocNum = r => `${String(r.numero).padStart(3, '0')}/${getCodigo()}/${r.ano}`;
 
   let docs = { lista: [], editando: null };
 
-  // Busca o próximo número sequencial para um tipo e ano específico
-  async function obterProximoNumero(tipo, ano) {
+  // Busca o próximo número sequencial EXCLUSIVO da seção, tipo e ano
+  async function obterProximoNumero(tipo, ano, secao) {
     const dbClient = getDb();
     if (!dbClient) return 1;
-    // Não filtra por excluido: garante que números deletados nunca sejam reutilizados
+
     const { data, error } = await dbClient
       .from('documentos_pm')
       .select('numero')
       .eq('tipo', tipo)
       .eq('ano', ano)
+      .eq('secao', secao)
       .order('numero', { ascending: false })
       .limit(1);
 
@@ -57,26 +67,29 @@
     return (data[0].numero || 0) + 1;
   }
 
-  // Atualiza em tempo real o campo de previsão do próximo número
+  // Previsão do próximo número em tempo real
   async function atualizarPrevisao() {
     const tipo = $('#numTipo')?.value;
     const dataVal = $('#numData')?.value || new Date().toISOString().slice(0, 10);
     const ano = parseInt(dataVal.split('-')[0], 10);
+    const secao = obterSecaoAtual();
     const prevEl = $('#numPrevisao');
     if (!prevEl || !tipo || !ano) return;
 
     prevEl.value = 'Calculando…';
     try {
-      const prox = await obterProximoNumero(tipo, ano);
+      const prox = await obterProximoNumero(tipo, ano, secao);
       prevEl.value = `${prox < 10 ? '00' : prox < 100 ? '0' : ''}${prox}/${getCodigo()}/${ano}`;
     } catch {
       prevEl.value = '---';
     }
   }
 
+  // Carrega apenas os documentos da seção ativa
   async function carregarDocs() {
     const ano = parseInt($('#numFiltroAno').value, 10);
     const tipoFiltro = $('#numFiltroTipo').value;
+    const secao = obterSecaoAtual();
     $('#numCorpo').innerHTML = '<tr><td colspan="4" class="cont">Carregando documentos…</td></tr>';
 
     const dbClient = getDb();
@@ -90,6 +103,7 @@
       .select('*')
       .eq('excluido', false)
       .eq('ano', ano)
+      .eq('secao', secao) // Filtra exclusivamente pela seção ativa
       .order('numero', { ascending: false });
 
     if (tipoFiltro) {
@@ -115,7 +129,7 @@
     });
 
     if (!filtrados.length) {
-      $('#numCorpo').innerHTML = '<tr><td colspan="4" class="cont">Nenhum documento encontrado.</td></tr>';
+      $('#numCorpo').innerHTML = '<tr><td colspan="4" class="cont">Nenhum documento encontrado nesta seção.</td></tr>';
       return;
     }
 
@@ -141,10 +155,9 @@
   function garantirDialogs() {
     if (!$('#dNumerador')) {
       document.body.insertAdjacentHTML('beforeend', `
-        <!-- Diálogo Principal: Numerador de Documentos -->
         <dialog id="dNumerador">
           <div class="topo">
-            <h2>Numerador de Documentos</h2>
+            <h2 id="dNumTitulo">Numerador de Documentos</h2>
             <button class="mini" data-fechar>Fechar</button>
           </div>
 
@@ -171,7 +184,7 @@
             </div>
 
             <label>Assunto / Ementa
-              <textarea id="numAssunto" required placeholder="Descreva o conteúdo do documento"></textarea>
+              <textarea id="numAssunto" required placeholder="Descreva o conteúdo ou finalidade do documento"></textarea>
             </label>
 
             <div class="acoes">
@@ -180,7 +193,7 @@
           </form>
 
           <div class="fr-topo">
-            <h3>Documentos Gerados</h3>
+            <h3>Documentos Gerados nesta Seção</h3>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <select id="numFiltroTipo" aria-label="Filtrar por tipo de documento">
                 <option value="">Todos os tipos</option>
@@ -207,7 +220,6 @@
           </div>
         </dialog>
 
-        <!-- Diálogo: Editar Documento -->
         <dialog id="dNumEd">
           <form id="fNumEd">
             <h2 id="numEdTitulo">Editar Documento</h2>
@@ -237,6 +249,12 @@
     garantirDialogs();
     montarFiltroAnos();
 
+    const sec = obterSecaoAtual();
+    const secObj = (typeof SECOES !== 'undefined' && SECOES[sec]) ? SECOES[sec] : null;
+    const nomeSec = secObj ? secObj.nome.split('·')[0].trim() : sec.toUpperCase();
+    const t = $('#dNumTitulo');
+    if (t) t.textContent = `Numerador de Documentos · ${nomeSec}`;
+
     const hoje = new Date().toISOString().slice(0, 10);
     if (!$('#numData').value) $('#numData').value = hoje;
 
@@ -248,7 +266,6 @@
   function inicializarEventos() {
     garantirDialogs();
 
-    // Abre ao clicar em qualquer botão com atributo [data-numerador] ou pelo ID #btnNumerador
     document.addEventListener('click', e => {
       if (e.target.closest('#btnNumerador') || e.target.closest('[data-numerador]')) {
         abrirNumerador();
@@ -261,13 +278,14 @@
     $('#numFiltroAno').onchange = carregarDocs;
     $('#numBusca').oninput = listarDocs;
 
-    // Gerar novo número
+    // Gerar numeração
     $('#fNumNovo').onsubmit = async e => {
       e.preventDefault();
       const b = $('#bNumGerar');
       const tipo = $('#numTipo').value;
       const dataVal = $('#numData').value;
       const ano = parseInt(dataVal.split('-')[0], 10);
+      const secao = obterSecaoAtual();
       const assunto = $('#numAssunto').value.trim();
       const interessado = $('#numInteressado').value.trim();
       const u = getUsuario();
@@ -277,8 +295,7 @@
 
       b.disabled = true;
       try {
-        // Sequencial individual e atômico
-        const numero = await obterProximoNumero(tipo, ano);
+        const numero = await obterProximoNumero(tipo, ano, secao);
         const novoDoc = {
           tipo,
           numero,
@@ -286,7 +303,7 @@
           data: dataVal,
           assunto,
           interessado,
-          secao: (typeof secaoAtual !== 'undefined' ? secaoAtual : ''),
+          secao,
           registrado_por: u ? u.email : '',
           excluido: false
         };
@@ -307,7 +324,7 @@
       }
     };
 
-    // Ações de Editar e Excluir
+    // Editar e Excluir
     $('#numCorpo').addEventListener('click', async e => {
       const bEd = e.target.closest('[data-ned]'), bEx = e.target.closest('[data-nex]');
       if (!bEd && !bEx) return;
@@ -318,7 +335,6 @@
 
       const refDoc = `${r.tipo} Nº ${fmtDocNum(r)}`;
 
-      // EDITAR (Com confirmação por senha)
       if (bEd) {
         if (!await getConfirmarSenha(`Editar ${refDoc}.`)) return;
         docs.editando = r;
@@ -327,10 +343,8 @@
         $('#numEdInteressado').value = r.interessado || '';
         $('#numEdAssunto').value = r.assunto || '';
         $('#dNumEd').showModal();
-      }
-      // EXCLUIR (Com confirmação por senha)
-      else if (bEx) {
-        if (!await getConfirmarSenha(`Excluir ${refDoc}. O documento sairá da lista e o histórico será preservado.`)) return;
+      } else if (bEx) {
+        if (!await getConfirmarSenha(`Excluir ${refDoc}. O documento sairá da lista da seção.`)) return;
         const dbClient = getDb();
         const { error } = await dbClient.from('documentos_pm').update({ excluido: true }).eq('id', r.id);
         if (error) return getAviso('Não foi possível excluir. Verifique sua permissão.', 1);
