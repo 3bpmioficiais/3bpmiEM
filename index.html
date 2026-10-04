@@ -22,14 +22,123 @@ header small{display:block;color:var(--mut)}
 nav{display:flex;gap:4px;padding:0 28px;border-bottom:1px solid var(--linha);overflow-x:auto}
 nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);padding:14px 16px;font:inherit;cursor:pointer;white-space:nowrap}
 nav button[aria-current=true]{color:var(--txt);border-color:var(--red)}
-main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:32px 28px}
+main{flex:1;width:100%;max-width:1200px;margin:0 auto;padding:30px 28px}
 h1{font-size:1.3rem;margin-bottom:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start}
-.card{background:var(--panel);border:1px solid var(--linha);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px}
-.card h2{font-size:1rem}
-a.card{color:inherit;text-decoration:none}
-a.card:hover{border-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch;grid-auto-flow:row}
+.card{background:var(--panel);border:1px solid var(--linha);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:14px;position:relative;transition:border-color .15s,box-shadow .15s;min-width:0;min-height:220px}
+.card:hover{border-color:#3a4454}
+.card h2{font-size:1.02rem;letter-spacing:.01em}
+a.card{color:inherit;text-decoration:none;position:relative;cursor:pointer}
+a.card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(200,16,46,.15);transform:translateY(-1px)}
 a.card p{color:var(--mut);font-size:.875rem}
+
+/* ===== Card em Destaque: Numerador Eletrônico (Principal Ferramenta) ===== */
+.card-numerador-hero{
+  grid-column:1 / -1;
+  min-height:190px;
+  background:linear-gradient(135deg,#1c212a 0%,#13171d 100%);
+  border:1px solid rgba(200,16,46,.5);
+  border-left:6px solid var(--red);
+  border-radius:12px;
+  padding:24px 28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:24px;
+  box-shadow:0 6px 24px rgba(0,0,0,.45);
+  position:relative;
+  overflow:hidden;
+}
+.card-numerador-hero::after{
+  content:"";
+  position:absolute;
+  top:-20px;
+  right:-20px;
+  width:180px;
+  height:180px;
+  background:radial-gradient(circle,rgba(200,16,46,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.card-num-info{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-width:700px;
+  position:relative;
+  z-index:1;
+}
+.card-num-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(200,16,46,.2);
+  color:#ff6b81;
+  border:1px solid rgba(200,16,46,.4);
+  border-radius:20px;
+  padding:3px 10px;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  width:fit-content;
+}
+.card-num-badge svg{flex:none}
+.card-numerador-hero h2{
+  font-size:1.25rem;
+  font-weight:700;
+  color:#fff;
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.card-numerador-hero p{
+  color:#a5afbf;
+  font-size:.9rem;
+  line-height:1.45;
+  margin:0;
+}
+.card-num-acao{
+  flex-shrink:0;
+  position:relative;
+  z-index:1;
+}
+.btn-numerador-destaque{
+  background:var(--red);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:14px 26px;
+  font-size:.95rem;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+  box-shadow:0 4px 16px rgba(200,16,46,.45);
+  transition:background .15s,transform .1s,box-shadow .15s;
+}
+.btn-numerador-destaque:hover{
+  background:var(--red2);
+  transform:translateY(-1px);
+  box-shadow:0 6px 22px rgba(200,16,46,.6);
+}
+.btn-numerador-destaque:active{
+  transform:translateY(0);
+}
+
+/* ===== Tags e Elementos Auxiliares dos Cards ===== */
+.card-topo-tag{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:-4px}
+.card-tag{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:4px}
+.tag-azul{background:rgba(46,134,222,.15);color:#54a0ff;border:1px solid rgba(46,134,222,.3)}
+.tag-verde{background:rgba(46,213,115,.15);color:#2ed573;border:1px solid rgba(46,213,115,.3)}
+.tag-laranja{background:rgba(255,159,67,.15);color:#ff9f43;border:1px solid rgba(255,159,67,.3)}
+.tag-cinza{background:rgba(139,148,163,.15);color:#8b94a3;border:1px solid rgba(139,148,163,.3)}
+.card-link-icone{color:var(--mut);font-size:1.1rem;line-height:1}
+a.card:hover .card-link-icone{color:var(--red)}
+.card-rodape{margin-top:auto;padding-top:6px;display:flex;flex-direction:column;gap:8px}
+.card-inq-rodape{margin-top:auto;padding-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 label{display:flex;flex-direction:column;gap:6px;font-size:.8rem;color:var(--mut);font-weight:600}
 input,select,textarea{font:inherit;color:var(--txt);background:var(--bg);border:1px solid var(--linha);border-radius:6px;padding:10px 12px}
 textarea{min-height:80px;resize:vertical}
@@ -63,6 +172,8 @@ td.nw{white-space:nowrap}
 .toast{background:#1f2a33;border-left:3px solid var(--ok);padding:12px 16px;border-radius:6px;font-size:.875rem;max-width:340px}
 .toast.erro{border-color:var(--red)}
 footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
+@media (min-width:1200px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.card-numerador-hero{grid-column:1 / -1}}
+@media (min-width:601px) and (max-width:900px){main{padding-inline:20px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
 @media (max-width:600px){header,nav{padding-inline:16px}main{padding:24px 16px}}
 /* ===== Ajustes exclusivos para dispositivos móveis ===== */
 @media (max-width:600px){
@@ -81,6 +192,9 @@ footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
   h1{font-size:1.15rem;margin-bottom:16px}
   .grid{grid-template-columns:minmax(0,1fr);gap:16px}
   .card{padding:18px;gap:12px}
+  .card-numerador-hero{flex-direction:column;align-items:stretch;padding:18px;gap:16px}
+  .card-numerador-hero h2{font-size:1.15rem}
+  .btn-numerador-destaque{width:100%;justify-content:center;padding:13px}
   input,select,textarea{font-size:16px;min-height:44px;width:100%}
   textarea{min-height:96px}
   .btn{min-height:44px;padding:12px 16px}
@@ -164,7 +278,6 @@ th{position:sticky;top:0;background:var(--panel)}
 <header>
   <img src="Brasão_3BC.png" alt="" onerror="this.hidden=true">
   <div class="marca"><b>Polícia Militar do Estado de São Paulo</b><small>Painel de Gestão · 3º Batalhão de Caçadores</small></div>
-  <button class="btn ghost" id="btnNumerador" hidden style="margin-right:8px">Numerador Eletrônico</button>
   <span id="usuario"></span>
   <button class="btn ghost" id="sair" hidden>Sair</button>
 </header>
@@ -291,40 +404,40 @@ const FORMS = {
   }
 };
 
-// Seções com o Card do Numerador Eletrônico posicionado ao lado dos outros menus
+// Seções e organização dos cards (Numerador Eletrônico sempre prioritário)
 const SECOES = {
   oficiais: {nome:'Oficiais - EM · CFP', itens:[
-    {form:'folga'},
+    {freq:true},
     {link:'CALENDÁRIO DE FOLGAS', texto:'Folgas programadas dos Oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
-    {freq:true}
+    {form:'folga'}
   ]},
   p1: {nome:'P/1 · Seç Pes', itens:[
     {numerador:true},
-    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'},
-    {freq:true}
+    {freq:true},
+    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
     {numerador:true},
-    {form:'operacao'},
+    {freq:true},
     {link:'CALENDÁRIO DE OPERAÇÕES', texto:'Calendário de Operações.', url:'https://calendar.google.com/calendar/embed?src=0825099768be603c9f8bcfb99fdd6c322279e525ca4a6929693938275d6592f4%40group.calendar.google.com&ctz=America%2FSao_Paulo'},
-    {freq:true}
+    {form:'operacao'}
   ]},
   p4: {nome:'P/4 · Seç Log', itens:[
     {numerador:true},    
-    {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'},
-    {freq:true}
+    {freq:true},
+    {link:'VIATURAS', texto:'Frota, manutenção e disponibilidade dos veículos oficiais.', url:'https://docs.google.com/spreadsheets/d/19HPuo13AXZRe3hMUMIQBvqwq9lf-hLsbTUOxkqDMi4c/edit?usp=drive_link'}
   ]},
   p5: {nome:'P/5 · Seç ComSoc', itens:[
     {numerador:true},
-    {form:'evento'},
-    {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'}
+    {link:'CALENDÁRIO DE SOLENIDADES', texto:'Calendário de Solenidades / Eventos do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=c4e06b5453a15e7965978a2e937a2b7cd3738a308709aefa84361f80ce013f8f%40group.calendar.google.com&ctz=America%2FSao_Paulo'},
+    {form:'evento'}
   ]},
   sjd: {nome:'SPJMD · Seç PJMD', itens:[
     {numerador:true},   
+    {freq:true},
     {inq:'IPM'},
     {inq:'IP'},
-    {inq:'Sindicância'},
-    {freq:true}
+    {inq:'Sindicância'}
   ]}
 };
 window.SECOES = SECOES;
@@ -434,7 +547,9 @@ function abrir(k) {
   secaoAtual = k;
   window.secaoAtual = k;
   document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', b.dataset.aba === k));
-  $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
+  // Garante que o Numerador Eletrônico seja sempre o primeiro card, independentemente da ordem cadastrada.
+  const itensOrdenados = [...SECOES[k].itens].sort((a, b) => Number(!!b.numerador) - Number(!!a.numerador));
+  $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${itensOrdenados.map(desenharItem).join('')}</div>`;
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   contar();
 
@@ -445,17 +560,78 @@ function abrir(k) {
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
 function desenharItem(i) {
-  if (i.numerador) return `<div class="card"><h2>NUMERADOR ELETRÔNICO</h2><p class="cont">Emissão e Controle Sequencial de Documentos.</p><button class="btn" data-numerador>Abrir Numerador</button></div>`;
-  if (i.freq) return `<div class="card"><h2>CONTROLE DE FREQUÊNCIA</h2><p class="cont">Lançamentos de folgas, meios-expedientes, inversões e demais alterações de escala.</p><button class="btn" data-freq>Abrir Controle de Frequência</button></div>`;
-  if (i.link) return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><h2>${esc(i.link)}</h2><p>${esc(i.texto)}</p></a>`;
-  if (i.inq) return `<div class="card"><h2>${i.inq === 'IPM' ? 'INQUÉRITO POLICIAL MILITAR - IPM' : i.inq === 'IP' ? 'INQUÉRITO POLICIAL - IP' : 'SINDICÂNCIA'}</h2>
-    <form class="col" data-inq="${i.inq}">
-      <label>Data de Instauração<input type="date" name="data" required></label>
-      <label>Assunto<textarea name="assunto" required></textarea></label>
-      <button class="btn">Cadastrar ${i.inq}</button>
-    </form>
-    <button class="btn ghost" data-ver="${i.inq}">Ver registros</button>
-    <p class="cont">Total instaurados: <b id="cont${i.inq}">-</b></p></div>`;
+  if (i.numerador) {
+    return `<div class="card card-numerador-hero">
+      <div class="card-num-info">
+        <div class="card-num-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          MAIS UTILIZADO · ACESSO PRIORITÁRIO
+        </div>
+        <h2>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          NUMERADOR ELETRÔNICO
+        </h2>
+        <p>Emissão e controle sequencial oficial de documentos da seção (Mensagens, Ofícios, Memorandos, Partes, NBIs e Ordens de Serviço).</p>
+      </div>
+      <div class="card-num-acao">
+        <button class="btn btn-numerador-destaque" data-numerador>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Abrir Numerador
+        </button>
+      </div>
+    </div>`;
+  }
+
+  if (i.freq) {
+    return `<div class="card">
+      <div class="card-topo-tag">
+        <span class="card-tag tag-azul">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Gestão de Efetivo
+        </span>
+      </div>
+      <h2>CONTROLE DE FREQUÊNCIA</h2>
+      <p class="cont">Lançamentos de folgas, meios-expedientes, inversões de serviço e demais alterações de escala.</p>
+      <div class="card-rodape">
+        <button class="btn" data-freq>Abrir Controle de Frequência</button>
+      </div>
+    </div>`;
+  }
+
+  if (i.link) {
+    const isAgenda = i.link.includes('CALENDÁRIO') || i.link.includes('FOLGAS');
+    return `<a class="card" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">
+      <div class="card-topo-tag">
+        <span class="card-tag ${isAgenda ? 'tag-laranja' : 'tag-verde'}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ${isAgenda ? 'Google Agenda' : 'Planilha Online'}
+        </span>
+        <span class="card-link-icone">↗</span>
+      </div>
+      <h2>${esc(i.link)}</h2>
+      <p>${esc(i.texto)}</p>
+    </a>`;
+  }
+
+  if (i.inq) {
+    const nomeInq = i.inq === 'IPM' ? 'INQUÉRITO POLICIAL MILITAR - IPM' : i.inq === 'IP' ? 'INQUÉRITO POLICIAL - IP' : 'SINDICÂNCIA';
+    return `<div class="card">
+      <div class="card-topo-tag">
+        <span class="card-tag tag-cinza">Polícia Judiciária Militar</span>
+      </div>
+      <h2>${nomeInq}</h2>
+      <form class="col" data-inq="${i.inq}">
+        <label>Data de Instauração<input type="date" name="data" required></label>
+        <label>Assunto<textarea name="assunto" required placeholder="Descreva a portaria ou síntese do fato"></textarea></label>
+        <button class="btn">Cadastrar ${i.inq}</button>
+      </form>
+      <div class="card-inq-rodape">
+        <button class="btn ghost" data-ver="${i.inq}">Ver registros</button>
+        <p class="cont">Total instaurados: <b id="cont${i.inq}">-</b></p>
+      </div>
+    </div>`;
+  }
+
   const f = FORMS[i.form];
   const campos = f.campos.map(c => {
     const at = `id="${c.id}" name="${c.id}"${c.req ? ' required' : ''} placeholder="${esc(c.ph || '')}"`;
@@ -463,7 +639,13 @@ function desenharItem(i) {
       : c.tipo === 'textarea' ? `<textarea ${at}></textarea>` : `<input type="${c.tipo}" ${at}>`;
     return `<label>${esc(c.label)}${el}</label>`;
   }).join('');
-  return `<div class="card"><h2>${esc(f.titulo)}</h2><form class="col" data-form="${i.form}">${campos}<button class="btn">${esc(f.botao)}</button></form></div>`;
+  return `<div class="card">
+    <div class="card-topo-tag">
+      <span class="card-tag tag-laranja">Registro Operacional</span>
+    </div>
+    <h2>${esc(f.titulo)}</h2>
+    <form class="col" data-form="${i.form}">${campos}<button class="btn">${esc(f.botao)}</button></form>
+  </div>`;
 }
 
 /* ---------- Envio dos formulários ---------- */
