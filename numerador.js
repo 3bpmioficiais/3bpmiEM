@@ -200,7 +200,7 @@
             </div>
 
             <label>Assunto:
-              <textarea id="numAssunto" required placeholder="Descreva o conteúdo ou finalidade do documento"></textarea>
+              <textarea id="numAssunto" required placeholder="Descreva o assunto ou conteúdo do documento"></textarea>
             </label>
 
             <div class="acoes">
