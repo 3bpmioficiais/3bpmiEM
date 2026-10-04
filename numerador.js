@@ -158,7 +158,7 @@
         <td class="nw">${fmtData(r.data)}</td>
         <td>
           <b>${esc(r.assunto)}</b>
-          ${r.interessado ? `<br><small class="cont">Destinatário/Interessado: ${esc(r.interessado)}</small>` : ''}
+          ${r.interessado ? `<br><small class="cont">Destino: ${esc(r.interessado)}</small>` : ''}
         </td>
         <td class="nw">
           <button class="mini" data-ned="${esc(r.id)}">Editar</button>
@@ -180,26 +180,26 @@
           <form id="fNumNovo" class="fr-form">
             <h3>Gerar nova numeração</h3>
             <div class="dupla">
-              <label>Tipo de Documento
+              <label>Tipo de Documento:
                 <select id="numTipo" required>
                   ${TIPOS_DOCS.map(t => `<option value="${t}">${t}</option>`).join('')}
                 </select>
               </label>
-              <label>Data do Documento
+              <label>Data do Documento:
                 <input type="date" id="numData" required>
               </label>
             </div>
 
             <div class="dupla">
-              <label>Destinatário / Interessado / Referência
+              <label>Destino
                 <input type="text" id="numInteressado" placeholder="Ex: Cmt do Batalhão, Seção de Pessoal, etc.">
               </label>
-              <label>Próximo número previsto
+              <label>Numeração Prevista:
                 <input type="text" id="numPrevisao" readonly style="color:var(--ok);font-weight:700">
               </label>
             </div>
 
-            <label>Assunto / Ementa
+            <label>Assunto:
               <textarea id="numAssunto" required placeholder="Descreva o conteúdo ou finalidade do documento"></textarea>
             </label>
 
