@@ -2,10 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0b0d10">
 <title>Gestão EM - 3º B.C.</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>window.supabase||document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>')</script>
 <style>
 :root{--bg:#0f1216;--panel:#171b21;--linha:#262c35;--txt:#e9ecf1;--mut:#8b94a3;--red:#c8102e;--red2:#e0203f;--ok:#2ed573}
 *{box-sizing:border-box;margin:0}
@@ -55,7 +58,8 @@ td.nw{white-space:nowrap}
 .overlay .card{width:min(400px,100%);text-align:center}
 .overlay img{width:96px;margin:0 auto}
 .msg-erro{color:#ff6b81;font-size:.85rem}
-#toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:8px;z-index:100}
+#toasts{position:fixed;inset:auto 20px 20px auto;margin:0;padding:0;border:0;background:none;overflow:visible;width:auto;color:inherit;z-index:100}
+#toasts:popover-open{display:grid;gap:8px}
 .toast{background:#1f2a33;border-left:3px solid var(--ok);padding:12px 16px;border-radius:6px;font-size:.875rem;max-width:340px}
 .toast.erro{border-color:var(--red)}
 footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
@@ -136,6 +140,19 @@ input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:
 .fr-item p{font-size:.88rem}
 .fr-acoes{display:flex;gap:8px}
 @media (max-width:600px){.dupla,.horas{grid-template-columns:1fr}.tp-corpo{margin-left:0}.fr-acoes .mini{flex:1}}
+/* ===== Revisão: correções de compatibilidade ===== */
+:root{color-scheme:dark}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh}
+body:has(dialog[open]){overflow:hidden}
+header{padding-top:max(12px,env(safe-area-inset-top))}
+footer{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+dialog{max-height:88vh;max-height:88dvh;overscroll-behavior:contain}
+dialog input[type=search],#sSenha{width:100%}
+th{position:sticky;top:0;background:var(--panel)}
+.overlay{overflow:auto}
+@media (max-width:600px){dialog{max-height:92vh;max-height:92dvh}input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0}input[type=checkbox]{width:22px;height:22px}}
 </style>
 </head>
 <body>
@@ -182,7 +199,7 @@ input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:
 <!-- Controle de Frequência (P/3) -->
 <dialog id="dFreq">
   <div class="topo"><h2>Controle de Frequência</h2><button class="mini" data-fechar>Fechar</button></div>
-  <label>Mês de referência<input type="month" id="fMes" required></label>
+  <div class="dupla"><label>Mês de referência<select id="fMesSel"></select></label><label>Ano<select id="fAnoSel"></select></label></div>
   <form id="fFreq" class="fr-form">
     <h3>Novo lançamento</h3>
     <div class="dupla">
@@ -220,7 +237,7 @@ input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:
   </form>
 </dialog>
 
-<div id="toasts" aria-live="polite"></div>
+<div id="toasts" popover="manual" role="status" aria-live="polite"></div>
 
 <script>
 /* =====================================================================
@@ -310,15 +327,19 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtData = d => d ? d.split('-').reverse().join('/') : '';
 const fmtNum = r => `${String(r.numeracao).padStart(3,'0')}/${CONFIG.CODIGO}/${r.ano}`;
+if (!window.supabase) {
+  document.body.innerHTML = '<p style="padding:24px">Não foi possível carregar o sistema (biblioteca de acesso). Verifique a internet e recarregue a página.</p>';
+  throw new Error('supabase indisponível');
+}
 const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 let usuario = null, perfil = null, tipoAtual = '', registros = [], editando = null;
 
 function aviso(msg, erro) {
-  const t = document.createElement('div');
-  t.className = 'toast' + (erro ? ' erro' : '');
-  t.textContent = msg;
-  $('#toasts').append(t);
-  setTimeout(() => t.remove(), 5000);
+  const box = $('#toasts'), t = document.createElement('div');
+  t.className = 'toast' + (erro ? ' erro' : ''); t.textContent = msg; box.append(t);
+  // popover vai para a "camada superior": sem isso o aviso ficaria atrás de janelas <dialog> abertas
+  try { if (box.showPopover) { if (box.matches(':popover-open')) box.hidePopover(); box.showPopover(); } } catch {}
+  setTimeout(() => { t.remove(); if (!box.children.length) try { box.hidePopover?.(); } catch {} }, 5000);
 }
 
 /* ---------- Login e sessão ---------- */
@@ -333,6 +354,7 @@ $('#fLogin').onsubmit = async e => {
     er.hidden = false; return;
   }
   $('#lSenha').value = '';
+  marcarUso();
   iniciar();
 };
 
@@ -340,7 +362,9 @@ async function iniciar() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { $('#login').hidden = false; return; }
   usuario = session.user;
-  const { data } = await db.from('perfis').select('secao').maybeSingle();
+  if (!usoRecente()) { await sair(); return; }
+  const { data, error } = await db.from('perfis').select('secao').maybeSingle();
+  if (error) { $('#login').hidden = false; $('#erroLogin').textContent = 'Não foi possível carregar seu perfil. Verifique a internet e tente novamente.'; $('#erroLogin').hidden = false; return; }
   perfil = data?.secao;
   if (!perfil) {
     await db.auth.signOut();
@@ -355,13 +379,26 @@ async function iniciar() {
   vigiarInatividade();
 }
 
-async function sair() { await db.auth.signOut(); location.reload(); }
+async function sair() {
+  try { const r = await db.auth.signOut(); if (r.error) await db.auth.signOut({ scope: 'local' }); } catch {}
+  try { localStorage.removeItem(K_USO); } catch {}
+  location.reload();
+}
 $('#sair').onclick = sair;
 
-let relogio;
+const K_USO = 'gem_ultimo_uso';
+const marcarUso = () => { try { localStorage.setItem(K_USO, Date.now()); } catch {} };
+const usoRecente = () => { try { const t = +localStorage.getItem(K_USO); return !t || Date.now() - t < CONFIG.MINUTOS_INATIVIDADE * 60000; } catch { return true; } };
+let relogio, vigiando = false;
 function vigiarInatividade() {
-  const zerar = () => { clearTimeout(relogio); relogio = setTimeout(sair, CONFIG.MINUTOS_INATIVIDADE * 60000); };
-  ['click','keydown','mousemove','touchstart'].forEach(ev => addEventListener(ev, zerar, { passive: true }));
+  if (vigiando) return; vigiando = true;
+  let ult = 0;
+  const zerar = () => { marcarUso(); clearTimeout(relogio); relogio = setTimeout(sair, CONFIG.MINUTOS_INATIVIDADE * 60000); };
+  const lim = () => { const n = Date.now(); if (n - ult > 1000) { ult = n; zerar(); } };
+  ['click','keydown','mousemove','pointerdown','touchstart','touchmove','scroll'].forEach(ev => addEventListener(ev, lim, { passive: true, capture: true }));
+  // celular em segundo plano suspende timers: confere o relógio ao voltar para a aba
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !usoRecente()) sair(); });
+  db.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT' && usuario) location.reload(); });
   zerar();
 }
 
@@ -372,7 +409,7 @@ function montar() {
   const chaves = permitidas();
   $('#abas').hidden = chaves.length < 2;
   $('#abas').innerHTML = chaves.map(k => `<button data-aba="${k}">${esc(SECOES[k].nome)}</button>`).join('');
-  addEventListener('hashchange', () => abrir(location.hash.slice(1)));
+  onhashchange = () => abrir(location.hash.slice(1));
   abrir(location.hash.slice(1));
 }
 
@@ -382,6 +419,7 @@ function abrir(k) {
   if (!k) return;
   document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', b.dataset.aba === k));
   $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
+  document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   contar();
 }
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
@@ -423,7 +461,11 @@ async function enviarForm(f) {
   def.campos.forEach(c => d[c.id] = f.elements[c.id].value);
   const msg = def.validar?.(d);
   if (msg) return aviso(msg, 1);
-  await fetch(def.url, { method: 'POST', body: new URLSearchParams({ acao: def.acao, ...d }) });
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+  try {
+    const r = await fetch(def.url, { method: 'POST', body: new URLSearchParams({ acao: def.acao, ...d }), signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+  } finally { clearTimeout(to); }
   aviso(def.ok); f.reset();
 }
 
@@ -439,11 +481,11 @@ async function cadastrarInq(f) {
 }
 
 async function contar() {
-  for (const t of ['IPM', 'IP', 'Sindicância']) {
-    const el = $('#cont' + t); if (!el) continue;
+  await Promise.all(['IPM', 'IP', 'Sindicância'].map(async t => {
+    const el = $('#cont' + t); if (!el) return;
     const { count } = await db.from('inqueritos_pm').select('*', { count: 'exact', head: true }).eq('tipo', t).eq('excluido', false);
     el.textContent = count ?? '-';
-  }
+  }));
 }
 
 $('#conteudo').addEventListener('click', e => {
@@ -452,8 +494,10 @@ $('#conteudo').addEventListener('click', e => {
 });
 
 async function carregar() {
+  const t = tipoAtual; registros = [];
   $('#rCorpo').innerHTML = '<tr><td colspan="4">Carregando…</td></tr>';
-  const { data, error } = await db.from('inqueritos_pm').select('*').eq('tipo', tipoAtual).eq('excluido', false).order('numeracao', { ascending: false });
+  const { data, error } = await db.from('inqueritos_pm').select('*').eq('tipo', t).eq('excluido', false).order('numeracao', { ascending: false });
+  if (t !== tipoAtual) return;
   if (error) { $('#rCorpo').innerHTML = '<tr><td colspan="4" class="msg-erro">Erro ao carregar os registros.</td></tr>'; return; }
   registros = data; listar();
 }
@@ -540,8 +584,12 @@ function gerarTexto(id) {
   return tipoFreq(id).texto($('#fPol').value, { ini: hh(q('ini')?.value), fim: hh(q('fim')?.value), ord: freq.ord });
 }
 function atualizarTexto(id, forcar) {
-  const ta = blocoFreq(id).querySelector('textarea');
-  if (forcar || !ta.dataset.editado) { ta.value = gerarTexto(id); delete ta.dataset.editado; }
+  const ta = blocoFreq(id).querySelector('textarea'), novo = gerarTexto(id), base = ta.dataset.base || '', pol = $('#fPol').value;
+  if (forcar || !ta.dataset.editado) { ta.value = novo; delete ta.dataset.editado; }
+  // texto já editado: preserva o que o usuário completou e troca só a parte gerada (nome/horário)
+  else if (base && ta.value.startsWith(base)) ta.value = novo + ta.value.slice(base.length);
+  else if (freq.pol && pol && freq.pol !== pol) ta.value = ta.value.split(freq.pol).join(pol);
+  ta.dataset.base = novo;
 }
 function marcados() { return [...document.querySelectorAll('#fTipos input[type=checkbox]:checked')].map(c => c.value); }
 
@@ -571,22 +619,32 @@ function montarFormFreq() {
   freq.ord = '1º';
 }
 
+const mesRef = () => `${$('#fAnoSel').value}-${$('#fMesSel').value}`;
+function montarMeses() {
+  if ($('#fAnoSel').options.length) return;
+  const h = new Date(), a = h.getFullYear();
+  $('#fMesSel').innerHTML = MESES.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
+  $('#fAnoSel').innerHTML = [a - 2, a - 1, a, a + 1].map(y => `<option>${y}</option>`).join('');
+  $('#fMesSel').value = String(h.getMonth() + 1).padStart(2, '0'); $('#fAnoSel').value = a;
+}
 function ajustarMes() {
-  const mes = $('#fMes').value; if (!mes) return;
+  const mes = mesRef(); if (!mes) return;
   const [y, m] = mes.split('-').map(Number), ult = isoData(new Date(y, m, 0)), hoje = isoData(new Date());
   $('#fData').min = `${mes}-01`; $('#fData').max = ult;
   if (!$('#fData').value || $('#fData').value < `${mes}-01` || $('#fData').value > ult)
     $('#fData').value = hoje >= `${mes}-01` && hoje <= ult ? hoje : `${mes}-01`;
   $('#fMesNome').textContent = `${MESES[m - 1]} de ${y}`;
+  if (marcados().includes('meio')) atualizarOrdinal();
   carregarFreq();
 }
 
 async function carregarFreq() {
-  const mes = $('#fMes').value; if (!mes) return;
+  const mes = mesRef(); if (!mes) return;
   const [y, m] = mes.split('-').map(Number);
   $('#fLista').innerHTML = '<p class="cont">Carregando…</p>';
   const { data, error } = await db.from('frequencia_pm').select('*').eq('excluido', false)
     .gte('data', `${mes}-01`).lte('data', isoData(new Date(y, m, 0))).order('data').order('criado_em');
+  if (mes !== mesRef()) return;
   if (error) { $('#fLista').innerHTML = '<p class="msg-erro">Erro ao carregar os lançamentos.</p>'; return; }
   freq.lista = data; listarFreq();
 }
@@ -606,12 +664,12 @@ function listarFreq() {
 }
 
 function abrirFreq() {
-  if (!$('#fMes').value) $('#fMes').value = isoData(new Date()).slice(0, 7);
+  montarMeses();
   montarFormFreq(); $('#fData').value = ''; ajustarMes();
   $('#dFreq').showModal();
 }
 $('#conteudo').addEventListener('click', e => { if (e.target.closest('[data-freq]')) abrirFreq(); });
-$('#fMes').onchange = ajustarMes;
+$('#fMesSel').onchange = $('#fAnoSel').onchange = ajustarMes;
 $('#fFiltro').onchange = listarFreq;
 
 $('#fTipos').addEventListener('change', e => {
@@ -622,7 +680,7 @@ $('#fTipos').addEventListener('change', e => {
   if (!c.checked) return;
   delete ta.dataset.editado; atualizarTexto(c.value, true);
   if (c.value === 'meio') atualizarOrdinal();
-  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  if (!matchMedia('(pointer:coarse)').matches) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
 });
 $('#fTipos').addEventListener('input', e => {
   const bl = e.target.closest('[data-t]'); if (!bl) return;
@@ -630,6 +688,7 @@ $('#fTipos').addEventListener('input', e => {
 });
 $('#fPol').onchange = () => {
   marcados().forEach(id => atualizarTexto(id));
+  freq.pol = $('#fPol').value;
   if (marcados().includes('meio')) atualizarOrdinal();
 };
 $('#fData').onchange = () => { if (marcados().includes('meio')) atualizarOrdinal(); };
@@ -644,6 +703,7 @@ $('#fFreq').onsubmit = async e => {
     if (tipoFreq(id).horas && (!bl.querySelector('[name=ini]').value || !bl.querySelector('[name=fim]').value))
       return aviso(`Informe o horário de início e de término em "${tipoFreq(id).nome}".`, 1);
     if (!bl.querySelector('textarea').value.trim()) return aviso(`O texto de "${tipoFreq(id).nome}" está vazio.`, 1);
+    if (/XXXX|'\.\.\.'/.test(bl.querySelector('textarea').value)) return aviso(`Complete os trechos pendentes (XXXX ou '...') em "${tipoFreq(id).nome}".`, 1);
   }
   b.disabled = true;
   try {
@@ -702,7 +762,7 @@ function confirmarSenha(texto) {
       e.preventDefault();
       const b = $('#bSenha'); b.disabled = true;
       // Cliente temporário: confere a senha sem trocar a sessão de quem está logado
-      const teste = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+      const teste = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'gem-verificacao' } });
       const { error } = await teste.auth.signInWithPassword({ email: usuario.email, password: $('#sSenha').value });
       b.disabled = false;
       if (!error) return d.close('ok');
