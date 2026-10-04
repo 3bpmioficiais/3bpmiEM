@@ -1,5 +1,5 @@
 /**
- * frequencia.js - Módulo exclusivo do Controle de Frequência
+ * controle_frequencia.js - Módulo exclusivo do Controle de Frequência
  * 3º Batalhão de Caçadores
  */
 (() => {
