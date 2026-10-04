@@ -67,36 +67,29 @@ footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
 /* ===== Ajustes exclusivos para dispositivos móveis ===== */
 @media (max-width:600px){
   body{font-size:16px}
-  /* Cabeçalho */
   header{flex-wrap:wrap;gap:10px 12px;padding-block:10px}
   header img{height:38px}
-  header .marca{flex:1 1 calc(100% - 50px);min-width:0}
-  header .marca{line-height:1.2}
+  header .marca{flex:1 1 calc(100% - 50px);min-width:0;line-height:1.2}
   header b{font-size:min(.9rem,calc((100vw - 90px)/22));display:block;white-space:nowrap}
   header small{font-size:min(.75rem,calc((100vw - 90px)/24));margin-top:3px;line-height:1.3;white-space:nowrap}
   #usuario{order:3;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem}
   #sair{order:4;padding:8px 14px}
-  /* Abas com rolagem horizontal suave */
   nav{gap:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   nav::-webkit-scrollbar{display:none}
   nav button{padding:13px 14px;font-size:.9rem}
-  /* Conteúdo */
   main{padding:20px 16px}
   h1{font-size:1.15rem;margin-bottom:16px}
   .grid{grid-template-columns:minmax(0,1fr);gap:16px}
   .card{padding:18px;gap:12px}
-  /* Campos e botões confortáveis ao toque (16px evita zoom automático no iOS) */
   input,select,textarea{font-size:16px;min-height:44px;width:100%}
   textarea{min-height:96px}
   .btn{min-height:44px;padding:12px 16px}
   .mini{min-height:36px;padding:6px 12px}
   .acoes{flex-direction:column-reverse}
   .acoes .btn{width:100%}
-  /* Janelas (diálogos) */
   dialog{width:calc(100vw - 24px);max-height:92vh;padding:18px}
   .topo{flex-wrap:wrap}
   .tw{max-height:62vh;margin-top:12px}
-  /* Tabela de registros vira lista de cartões */
   table,tbody{display:block}
   thead{display:none}
   tbody tr{display:block;padding:12px 0;border-bottom:1px solid var(--linha)}
@@ -111,13 +104,12 @@ footer{text-align:center;color:var(--mut);font-size:.75rem;padding:20px}
   td:not([colspan]):nth-child(4){display:flex;gap:8px;padding-top:8px}
   td:not([colspan]):nth-child(4)::before{content:none}
   td:not([colspan]):nth-child(4) .mini{flex:1}
-  /* Avisos ocupam a largura da tela */
   #toasts{left:12px;right:12px;bottom:12px}
   .toast{max-width:none}
   footer{padding:16px}
 }
 @media (max-width:360px){header img{height:34px}}
-/* ===== Controle de Frequência ===== */
+/* ===== Estilos do Controle de Frequência ===== */
 h3{font-size:.95rem}
 input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:var(--red);flex:none}
 .chk{flex-direction:row;align-items:center;gap:10px;color:var(--txt);font-size:.92rem;font-weight:500;cursor:pointer}
@@ -241,7 +233,7 @@ th{position:sticky;top:0;background:var(--panel)}
 
 <script>
 /* =====================================================================
-   1) CONFIGURAÇÃO - é aqui que você faz as alterações do dia a dia
+   1) CONFIGURAÇÃO
    ===================================================================== */
 const CONFIG = {
   SUPABASE_URL: 'https://xxzmlddpmmgwhbotutsj.supabase.co',
@@ -249,58 +241,28 @@ const CONFIG = {
   URL_FOLGAS: 'https://script.google.com/macros/s/AKfycby6MaQTwhw_QePtaJLhhvJzKOxK7nVd8d5wFGhRj6WNh_MoH0YfjpvBoELPaJ8PySzz0g/exec',
   URL_OPERACOES: 'https://script.google.com/macros/s/AKfycbyffyuKCzgSxc-bCBlIS9YvFfwzomU34w10Y5lqKr37FJ02GkdXYtMdGkNs0as72LiQ/exec',
   URL_EVENTOS: 'https://script.google.com/macros/s/AKfycbyB_rE1EojyondUq-aYihCWmVFOeyJfWLx2conKDn0YcUQz8cBYm0e5ZaymvpjB8T9v/exec',
-  UNIDADE: '3BPMI',            // aparece na numeração: 3BPMI - 012/06/2026
+  UNIDADE: '3BPMI',
   CODIGO: '06',
-  MINUTOS_INATIVIDADE: 15      // sai sozinho após esse tempo sem uso
+  MINUTOS_INATIVIDADE: 15
 };
 
-// Lista de oficiais do formulário de folgas (um por linha, entre aspas)
 const NOMES = [
   'Ten Cel PM Eduardo','Maj PM Martins Ribeiro','Maj PM Luana','Cap PM Cravero','Cap PM Del Vecchio',
   'Cap PM André Luís','Ten PM Felipe Carvalho','Ten PM Ribeiro','Ten PM Feitosa','Ten PM Natalia',
   'Ten PM Derick','Ten PM Chevchuk','Ten PM Zanardo','Ten PM Larissa Muniz','Ten PM Borgo'
 ];
+window.NOMES = NOMES;
 
-// Efetivo de cada seção para o Controle de Frequência
-// (A seção P/3 está mantida exatamente com os mesmos policiais e grupos)
-const EFETIVOS_POR_SECAO = {
-  oficiais: {
-    'Oficiais': NOMES
-  },
-  p1: {
-    'P/1': ['Cap PM André Luís','1º Ten PM Feitosa','1º Sgt PM Pazelli','Cb PM Antônio','Cb PM Ana Cláudia','Sd PM Yamada'],
-    'P/5': ['Cb PM Marcari','Sd PM Pereira','Sd PM Breno']
-  },
-  p3: {
-    'P/3': ['Cap PM 990113-2 Cravero','2º Sgt PM 147149-0 Brito','Cb PM 980440-4 Alcebíades','Cb PM 152866-1 Neres','Cb PM 144936-2 Fukuda'],
-    'GEOCRIMINAL': ['Cb PM 971085-0 Landim','Cb PM 980457-9 Cruz','991538-9 Aender','Cb PM 136957-1 Lucas','Cb PM 146130-3 Casio'],
-    'DCAP': ['1º Sgt PM 980576-1 Bino','Cb PM 134666-A Ribas','Cb PM 149535-6 Cognetti','Sd PM 192404-4 Gimenes']
-  },
-  p4: {
-    'P/4': ['1º Ten PM Borgo','2º Sgt PM Ricardo','Cb PM Molezine','Cb PM Scarparo','Cb PM Zocaratto','Cb PM Duarte','Cb PM Adilson','Cb PM Zafalon','Cb PM Mingarino'],
-    'RESERVA DE ARMAS': ['Cb PM Dellaspora','Cb PM Fregnani','Cb PM Graton','Cb PM Carlos','Cb PM Rosseto']
-  },
-  sjd: {
-    'SPJMD': ['Cap PM Del Vecchio','Subten PM Boleta','Subten PM Nomura','1º Sgt PM Kill','Cb PM Alves','Sd PM Mitidieri'],
-    'MARIA DA PENHA': ['Sd PM Oliveira','Sd PM Delfino'],
-    'NUMEC': ['Cb PM Paulo']
-  }
-};
-
-// Retrocompatibilidade
-const EFETIVO = EFETIVOS_POR_SECAO.p3;
-
-// Formulários que enviam para o Google Agenda (cada "id" é o nome do campo enviado)
 const FORMS = {
   folga: {
     titulo: 'AGENDAR FOLGA', botao: 'Enviar folga', url: CONFIG.URL_FOLGAS, acao: 'folga',
     ok: 'Folga enviada e registrada no calendário.',
     campos: [
       {id:'nome', label:'Nome', tipo:'select', opcoes:NOMES, req:1},
-      {id:'data_folga', label:'Data Desejada', tipo:'date', req:1},
-      {id:'tipo_folga', label:'Tipo de Folga', tipo:'select', req:1,
+      {id:'data_folga', label:'Data desejada', tipo:'date', req:1},
+      {id:'tipo_folga', label:'Tipo de folga', tipo:'select', req:1,
        opcoes:['Mensal','Produtividade','Horas Passadas','Concessão','Semanal','Meio Expediente','Outra']},
-      {id:'especifique', label:'Especifique', tipo:'text',ph:'Ex: Semana 01JAN a 05JAN26, Folga Mensal'}
+      {id:'especifique', label:'Especifique (obrigatório se o tipo for Outra)', tipo:'text'}
     ],
     validar: d => d.tipo_folga === 'Outra' && !d.especifique.trim() ? 'Preencha o campo "Especifique".' : null
   },
@@ -308,8 +270,8 @@ const FORMS = {
     titulo: 'CRIAR OPERAÇÃO', botao: 'Criar operação', url: CONFIG.URL_OPERACOES, acao: 'operacao',
     ok: 'Operação criada e registrada no calendário.',
     campos: [
-      {id:'data_inicio', label:'Data Início', tipo:'date', req:1},
-      {id:'data_termino', label:'Data Término', tipo:'date', req:1},
+      {id:'data_inicio', label:'Data de início', tipo:'date', req:1},
+      {id:'data_termino', label:'Data de término', tipo:'date', req:1},
       {id:'ordem_operacoes', label:'Ordem de Operações Nº', tipo:'text', ph:'Ex: CoordOpPM-001/60/26'},
       {id:'nome_operacao', label:'Nome da Operação', tipo:'text', req:1, ph:'Ex: Operação Impacto'},
       {id:'descricao_operacao', label:'Descrição', tipo:'textarea', ph:'Descrição da Operação'}
@@ -320,23 +282,22 @@ const FORMS = {
     titulo: 'AGENDAR SOLENIDADE / EVENTO', botao: 'Registrar evento', url: CONFIG.URL_EVENTOS, acao: 'solenidade',
     ok: 'Evento registrado no calendário.',
     campos: [
-      {id:'data_evento', label:'Data do Evento', tipo:'date', req:1},
-      {id:'nome_evento', label:'Nome da Solenidade ou Evento', tipo:'text', req:1, ph:'Ex: Passagem de Comando'},
+      {id:'data_evento', label:'Data do evento', tipo:'date', req:1},
+      {id:'nome_evento', label:'Nome da solenidade ou evento', tipo:'text', req:1, ph:'Ex: Passagem de Comando'},
       {id:'local_evento', label:'Local', tipo:'text'},
-      {id:'descricao_evento', label:'Descrição e Observações', tipo:'textarea'}
+      {id:'descricao_evento', label:'Descrição e observações', tipo:'textarea'}
     ]
   }
 };
 
-// Seções e o que aparece em cada uma (P/5 mantida sem Frequência)
 const SECOES = {
   oficiais: {nome:'Oficiais - EM · CFP', itens:[
     {form:'folga'},
     {link:'CALENDÁRIO DE FOLGAS', texto:'Folgas programadas dos Oficiais do Batalhão.', url:'https://calendar.google.com/calendar/embed?src=3bpmioficiais%40gmail.com&ctz=America%2FSao_Paulo'},
-    {freq:true},
-    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'}
+    {freq:true}
   ]},
   p1: {nome:'P/1 · Seç Pes', itens:[
+    {link:'EFETIVO', texto:'Controle de pessoal e disponibilidade da tropa.', url:'https://docs.google.com/spreadsheets/d/1AMWgGsep2hu1gIB7h6hqOBqyu3tgyKZ0FChFaM9GAOk/edit?usp=drive_link'},
     {freq:true}
   ]},
   p3: {nome:'P/3 · Seç Op', itens:[
@@ -359,21 +320,26 @@ const SECOES = {
     {freq:true}
   ]}
 };
+window.SECOES = SECOES;
 
 /* =====================================================================
-   2) CÓDIGO DO SISTEMA - normalmente não precisa mexer daqui para baixo
+   2) CÓDIGO DO SISTEMA
    ===================================================================== */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtData = d => d ? d.split('-').reverse().join('/') : '';
 const fmtNum = r => `${String(r.numeracao).padStart(3,'0')}/${CONFIG.CODIGO}/${r.ano}`;
+
 if (!window.supabase) {
   document.body.innerHTML = '<p style="padding:24px">Não foi possível carregar o sistema (biblioteca de acesso). Verifique a internet e recarregue a página.</p>';
   throw new Error('supabase indisponível');
 }
 const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+window.db = db;
+
 let usuario = null, perfil = null, tipoAtual = '', registros = [], editando = null;
 let secaoAtual = 'p3';
+window.secaoAtual = 'p3';
 
 function aviso(msg, erro) {
   const box = $('#toasts'), t = document.createElement('div');
@@ -381,6 +347,7 @@ function aviso(msg, erro) {
   try { if (box.showPopover) { if (box.matches(':popover-open')) box.hidePopover(); box.showPopover(); } } catch {}
   setTimeout(() => { t.remove(); if (!box.children.length) try { box.hidePopover?.(); } catch {} }, 5000);
 }
+window.aviso = aviso;
 
 /* ---------- Login e sessão ---------- */
 $('#fLogin').onsubmit = async e => {
@@ -402,6 +369,7 @@ async function iniciar() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { $('#login').hidden = false; return; }
   usuario = session.user;
+  window.usuario = usuario;
   if (!usoRecente()) { await sair(); return; }
   const { data, error } = await db.from('perfis').select('secao').maybeSingle();
   if (error) { $('#login').hidden = false; $('#erroLogin').textContent = 'Não foi possível carregar seu perfil. Verifique a internet e tente novamente.'; $('#erroLogin').hidden = false; return; }
@@ -457,6 +425,7 @@ function abrir(k) {
   if (!chaves.includes(k)) k = chaves[0];
   if (!k) return;
   secaoAtual = k;
+  window.secaoAtual = k;
   document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', b.dataset.aba === k));
   $('#conteudo').innerHTML = `<h1>${esc(SECOES[k].nome)}</h1><div class="grid">${SECOES[k].itens.map(desenharItem).join('')}</div>`;
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
@@ -578,233 +547,6 @@ $('#fEd').onsubmit = async e => {
   $('#dEd').close(); aviso('Registro atualizado.'); carregar();
 };
 
-/* ---------- Controle de Frequência ---------- */
-const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const DIAS = ['dom','seg','ter','qua','qui','sex','sáb'];
-const TIPOS_FREQ = [
-  {id:'aglutinacao',   nome:'Aglutinação',                texto:(n)    => `${n} não trabalha neste dia, aglutinação dos 02 (dois) Meios Expedientes da semana `},
-  {id:'produtividade', nome:'Folga Produtividade',        texto:(n)    => `${n} não trabalha neste dia, usufruindo folga produtividade`},
-  {id:'mensal',        nome:'Folga Mensal',               texto:(n)    => `${n} não trabalha neste dia, usufruindo Folga Mensal referente ao mês de `},
-  {id:'meio',          nome:'Meio Expediente', horas:1,   texto:(n, h) => `${n} trabalha das ${h.ini} às ${h.fim}, usufruindo o ${h.ord} Meio Expediente da semana `},
-  {id:'inversao',      nome:'Inversão de Serviço',        texto:(n)    => `${n} não trabalha neste dia, inversão de serviço com o dia '...'. No lugar trabalha `},
-  {id:'alteracao',     nome:'Alteração de Horário', horas:1, texto:(n, h) => `${n} trabalha neste dia das ${h.ini} às ${h.fim}`},
-  {id:'acumulo',       nome:'Acúmulo de Meio Expediente', texto:(n)    => `${n} acumula XXXX Meio(s) Expediente(s) da semana `},
-  {id:'compensacao',   nome:'Compensação',                texto:(n)    => `${n} não trabalha neste dia, usufruindo Folga Compensação referente a `}
-];
-const tipoFreq = id => TIPOS_FREQ.find(t => t.id === id);
-
-// Retorna o efetivo da aba ativa no momento
-const efetivoAtual = () => EFETIVOS_POR_SECAO[secaoAtual] || EFETIVOS_POR_SECAO.p3;
-
-// Descobre o grupo/seção pertencente ao policial selecionado
-const grupoDe = pol => {
-  const ef = efetivoAtual();
-  const g = Object.keys(ef).find(k => ef[k].includes(pol));
-  if (g) return g;
-  for (const s of Object.values(EFETIVOS_POR_SECAO)) {
-    const achou = Object.keys(s).find(k => s[k].includes(pol));
-    if (achou) return achou;
-  }
-  return '';
-};
-
-const hh = v => v ? v.replace(':', 'h') : 'XXhXX';
-const dataLocal = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-const isoData = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-let freq = { lista: [], ord: '1º', editando: null };
-
-function semanaUtil(s) {
-  const d = dataLocal(s), seg = new Date(d);
-  seg.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  const sex = new Date(seg); sex.setDate(seg.getDate() + 4);
-  return [isoData(seg), isoData(sex)];
-}
-
-async function contarMeios(pol, data) {
-  const [a, b] = semanaUtil(data);
-  const { data: r, error } = await db.from('frequencia_pm').select('id').eq('policial', pol).eq('tipo', 'meio').eq('excluido', false).gte('data', a).lte('data', b);
-  if (error) throw error;
-  return r.length;
-}
-
-const blocoFreq = id => $(`#fTipos [data-t="${id}"]`);
-function gerarTexto(id) {
-  const bl = blocoFreq(id), q = n => bl.querySelector(`[name=${n}]`);
-  return tipoFreq(id).texto($('#fPol').value, { ini: hh(q('ini')?.value), fim: hh(q('fim')?.value), ord: freq.ord });
-}
-function atualizarTexto(id, forcar) {
-  const ta = blocoFreq(id).querySelector('textarea'), novo = gerarTexto(id), base = ta.dataset.base || '', pol = $('#fPol').value;
-  if (forcar || !ta.dataset.editado) { ta.value = novo; delete ta.dataset.editado; }
-  else if (base && ta.value.startsWith(base)) ta.value = novo + ta.value.slice(base.length);
-  else if (freq.pol && pol && freq.pol !== pol) ta.value = ta.value.split(freq.pol).join(pol);
-  ta.dataset.base = novo;
-}
-function marcados() { return [...document.querySelectorAll('#fTipos input[type=checkbox]:checked')].map(c => c.value); }
-
-async function atualizarOrdinal() {
-  const pol = $('#fPol').value, data = $('#fData').value, av = blocoFreq('meio').querySelector('[data-aviso]');
-  if (!pol || !data) return;
-  try {
-    const n = await contarMeios(pol, data);
-    freq.ord = n >= 2 ? '2º' : `${n + 1}º`;
-    av.textContent = n >= 2 ? 'Este policial já tem 2 Meios Expedientes lançados nesta semana.' : `Será lançado como ${freq.ord} Meio Expediente da semana.`;
-    atualizarTexto('meio');
-  } catch (err) { console.error(err); av.textContent = 'Não foi possível conferir os Meios Expedientes da semana.'; }
-}
-
-function montarFormFreq() {
-  const ef = efetivoAtual();
-  $('#fPol').innerHTML = '<option value="">Selecione</option>' + Object.entries(ef).map(([g, l]) =>
-    `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
-  $('#fFiltro').innerHTML = '<option value="">Todo o efetivo</option>' + Object.entries(ef).map(([g, l]) =>
-    `<optgroup label="${esc(g)}">${l.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('');
-  $('#fTipos').innerHTML = TIPOS_FREQ.map(t => `<div class="tp" data-t="${t.id}">
-    <label class="chk"><input type="checkbox" value="${t.id}">${esc(t.nome)}</label>
-    <div class="tp-corpo" hidden>
-      ${t.horas ? '<div class="horas"><label>Trabalha das:<input type="time" name="ini"></label><label>Às:<input type="time" name="fim"></label></div>' : ''}
-      ${t.id === 'meio' ? '<p class="cont" data-aviso></p>' : ''}
-      <textarea aria-label="Texto: ${esc(t.nome)}"></textarea>
-    </div></div>`).join('');
-  freq.ord = '1º';
-}
-
-const mesRef = () => `${$('#fAnoSel').value}-${$('#fMesSel').value}`;
-function montarMeses() {
-  if ($('#fAnoSel').options.length) return;
-  const h = new Date(), a = h.getFullYear();
-  $('#fMesSel').innerHTML = MESES.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
-  $('#fAnoSel').innerHTML = [a - 2, a - 1, a, a + 1].map(y => `<option>${y}</option>`).join('');
-  $('#fMesSel').value = String(h.getMonth() + 1).padStart(2, '0'); $('#fAnoSel').value = a;
-}
-function ajustarMes() {
-  const mes = mesRef(); if (!mes) return;
-  const [y, m] = mes.split('-').map(Number), ult = isoData(new Date(y, m, 0)), hoje = isoData(new Date());
-  $('#fData').min = `${mes}-01`; $('#fData').max = ult;
-  if (!$('#fData').value || $('#fData').value < `${mes}-01` || $('#fData').value > ult)
-    $('#fData').value = hoje >= `${mes}-01` && hoje <= ult ? hoje : `${mes}-01`;
-  $('#fMesNome').textContent = `${MESES[m - 1]} de ${y}`;
-  if (marcados().includes('meio')) atualizarOrdinal();
-  carregarFreq();
-}
-
-async function carregarFreq() {
-  const mes = mesRef(); if (!mes) return;
-  const [y, m] = mes.split('-').map(Number);
-  $('#fLista').innerHTML = '<p class="cont">Carregando…</p>';
-  const { data, error } = await db.from('frequencia_pm').select('*').eq('excluido', false)
-    .gte('data', `${mes}-01`).lte('data', isoData(new Date(y, m, 0))).order('data').order('criado_em');
-  if (mes !== mesRef()) return;
-  if (error) { $('#fLista').innerHTML = '<p class="msg-erro">Erro ao carregar os lançamentos.</p>'; return; }
-  freq.lista = data; listarFreq();
-}
-
-function listarFreq() {
-  const f = $('#fFiltro').value;
-  const ef = efetivoAtual();
-  const todosPol = Object.values(ef).flat();
-  // Mostra apenas os lançamentos dos policiais pertencentes à seção aberta
-  const l = freq.lista.filter(r => todosPol.includes(r.policial) && (!f || r.policial === f));
-  const dias = {};
-  l.forEach(r => (dias[r.data] ||= []).push(r));
-  $('#fLista').innerHTML = Object.keys(dias).sort().map(d => `<section class="fr-dia">
-    <div class="fr-dia-cab"><b>${fmtData(d)} (${DIAS[dataLocal(d).getDay()]})</b><span>${dias[d].length} lançamento(s)</span></div>
-    ${dias[d].map(r => `<div class="fr-item">
-      <div class="fr-cab"><span class="tag">${esc(tipoFreq(r.tipo)?.nome || r.tipo)}</span><span class="cont">${esc(r.secao_efetivo)}</span></div>
-      <p>${esc(r.texto)}</p>
-      <div class="fr-acoes"><button class="mini" data-fe="${esc(r.id)}">Editar</button><button class="mini perigo" data-fx="${esc(r.id)}">Excluir</button></div></div>`).join('')}
-  </section>`).join('') || '<p class="cont">Nenhum lançamento neste mês.</p>';
-}
-
-function abrirFreq() {
-  const t = $('#dFreqTitulo');
-  if (t) t.textContent = secaoAtual === 'p3' ? 'Controle de Frequência' : `Controle de Frequência (${SECOES[secaoAtual]?.nome.split('·')[0].trim() || ''})`;
-  montarMeses();
-  montarFormFreq(); $('#fData').value = ''; ajustarMes();
-  $('#dFreq').showModal();
-}
-$('#conteudo').addEventListener('click', e => { if (e.target.closest('[data-freq]')) abrirFreq(); });
-$('#fMesSel').onchange = $('#fAnoSel').onchange = ajustarMes;
-$('#fFiltro').onchange = listarFreq;
-
-$('#fTipos').addEventListener('change', e => {
-  const c = e.target.closest('input[type=checkbox]'); if (!c) return;
-  const bl = blocoFreq(c.value), ta = bl.querySelector('textarea');
-  if (c.checked && !$('#fPol').value) { c.checked = false; return aviso('Selecione o policial do efetivo primeiro.', 1); }
-  bl.querySelector('.tp-corpo').hidden = !c.checked;
-  if (!c.checked) return;
-  delete ta.dataset.editado; atualizarTexto(c.value, true);
-  if (c.value === 'meio') atualizarOrdinal();
-  if (!matchMedia('(pointer:coarse)').matches) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
-});
-$('#fTipos').addEventListener('input', e => {
-  const bl = e.target.closest('[data-t]'); if (!bl) return;
-  if (e.target.tagName === 'TEXTAREA') e.target.dataset.editado = 1; else atualizarTexto(bl.dataset.t);
-});
-$('#fPol').onchange = () => {
-  marcados().forEach(id => atualizarTexto(id));
-  freq.pol = $('#fPol').value;
-  if (marcados().includes('meio')) atualizarOrdinal();
-};
-$('#fData').onchange = () => { if (marcados().includes('meio')) atualizarOrdinal(); };
-
-$('#fFreq').onsubmit = async e => {
-  e.preventDefault();
-  const b = $('button.btn', e.target), data = $('#fData').value, pol = $('#fPol').value, ids = marcados();
-  if (!pol) return aviso('Selecione o policial do efetivo.', 1);
-  if (!ids.length) return aviso('Marque ao menos uma opção de lançamento.', 1);
-  for (const id of ids) {
-    const bl = blocoFreq(id);
-    if (tipoFreq(id).horas && (!bl.querySelector('[name=ini]').value || !bl.querySelector('[name=fim]').value))
-      return aviso(`Informe o horário de início e de término em "${tipoFreq(id).nome}".`, 1);
-    if (!bl.querySelector('textarea').value.trim()) return aviso(`O texto de "${tipoFreq(id).nome}" está vazio.`, 1);
-    if (/XXXX|'\.\.\.'/.test(bl.querySelector('textarea').value)) return aviso(`Complete os trechos pendentes (XXXX ou '...') em "${tipoFreq(id).nome}".`, 1);
-  }
-  b.disabled = true;
-  try {
-    if (ids.includes('meio')) {
-      const n = await contarMeios(pol, data);
-      if (n >= 2) return aviso('Este policial já tem 2 Meios Expedientes lançados nesta semana.', 1);
-      if (`${n + 1}º` !== freq.ord) { await atualizarOrdinal(); atualizarTexto('meio', true); return aviso('A numeração do Meio Expediente foi atualizada. Confira o texto e registre novamente.', 1); }
-    }
-    if (!await confirmarSenha(`Registrar ${ids.length} lançamento(s) de frequência de ${pol} em ${fmtData(data)}.`)) return;
-    const linhas = ids.map(id => ({ data, policial: pol, secao_efetivo: grupoDe(pol), tipo: id,
-      texto: blocoFreq(id).querySelector('textarea').value.trim(), registrado_por: usuario.email }));
-    const { error } = await db.from('frequencia_pm').insert(linhas);
-    if (error) throw error;
-    aviso('Lançamento registrado.');
-    montarFormFreq(); $('#fPol').value = pol;
-    carregarFreq();
-  } catch (err) { console.error(err); aviso('Não foi possível registrar. Verifique sua permissão.', 1); }
-  finally { b.disabled = false; }
-};
-
-$('#fLista').addEventListener('click', async e => {
-  const bEd = e.target.closest('[data-fe]'), bEx = e.target.closest('[data-fx]');
-  if (!bEd && !bEx) return;
-  const r = freq.lista.find(x => String(x.id) === (bEd || bEx).dataset[bEd ? 'fe' : 'fx']);
-  if (!r) return;
-  const nome = tipoFreq(r.tipo)?.nome || r.tipo, ref = `${nome} de ${r.policial} em ${fmtData(r.data)}`;
-  if (bEd) {
-    if (!await confirmarSenha(`Editar lançamento: ${ref}.`)) return;
-    freq.editando = r;
-    $('#feTitulo').textContent = `Editar: ${nome}`;
-    $('#feData').value = r.data; $('#feTexto').value = r.texto;
-    $('#dFreqEd').showModal();
-  } else {
-    if (!await confirmarSenha(`Excluir lançamento: ${ref}. O registro sai da lista e fica guardado no histórico.`)) return;
-    const { error } = await db.from('frequencia_pm').update({ excluido: true }).eq('id', r.id);
-    if (error) return aviso('Não foi possível excluir. Verifique sua permissão.', 1);
-    aviso('Lançamento excluído.'); carregarFreq();
-  }
-});
-
-$('#fFreqEd').onsubmit = async e => {
-  e.preventDefault();
-  const { error } = await db.from('frequencia_pm').update({ data: $('#feData').value, texto: $('#feTexto').value.trim() }).eq('id', freq.editando.id);
-  if (error) return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
-  $('#dFreqEd').close(); aviso('Lançamento atualizado.'); carregarFreq();
-};
-
 /* ---------- Confirmação por senha (para editar e excluir) ---------- */
 function confirmarSenha(texto) {
   return new Promise(resolve => {
@@ -824,10 +566,14 @@ function confirmarSenha(texto) {
     };
   });
 }
+window.confirmarSenha = confirmarSenha;
 
 document.addEventListener('click', e => { const b = e.target.closest('[data-fechar]'); if (b) b.closest('dialog').close('cancel'); });
 
 iniciar();
 </script>
+
+<!-- Script exclusivo do Controle de Frequência -->
+<script src="frequencia.js"></script>
 </body>
 </html>
