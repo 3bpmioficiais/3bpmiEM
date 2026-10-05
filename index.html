@@ -296,6 +296,7 @@ th{position:sticky;top:0;background:var(--panel)}
 <dialog id="dEd">
   <form id="fEd">
     <h2 id="eTitulo">Editar registro</h2>
+    <label>Nº do registro<input type="number" id="eNumero" min="1" step="1" required></label>
     <label>Data de Instauração<input type="date" id="eData" required></label>
     <label>Assunto<textarea id="eAssunto" required></textarea></label>
     <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
@@ -724,7 +725,7 @@ $('#rCorpo').addEventListener('click', async e => {
     if (!await confirmarSenha(`Editar ${tipoAtual} ${fmtNum(r)}.`)) return;
     editando = r;
     $('#eTitulo').textContent = `Editar ${tipoAtual} ${fmtNum(r)}`;
-    $('#eData').value = r.data_instauracao; $('#eAssunto').value = r.assunto;
+    $('#eNumero').value = r.numeracao; $('#eData').value = r.data_instauracao; $('#eAssunto').value = r.assunto;
     $('#dEd').showModal();
   } else {
     if (!await confirmarSenha(`Excluir ${tipoAtual} ${fmtNum(r)}. O registro sai da lista e fica guardado no histórico.`)) return;
@@ -736,8 +737,13 @@ $('#rCorpo').addEventListener('click', async e => {
 
 $('#fEd').onsubmit = async e => {
   e.preventDefault();
-  const { error } = await db.from('inqueritos_pm').update({ data_instauracao: $('#eData').value, assunto: $('#eAssunto').value.trim() }).eq('id', editando.id);
-  if (error) return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
+  const numeracao = parseInt($('#eNumero').value, 10);
+  if (!Number.isInteger(numeracao) || numeracao < 1) return aviso('Informe um número válido (maior que zero).', 1);
+  const { error } = await db.from('inqueritos_pm').update({ numeracao, data_instauracao: $('#eData').value, assunto: $('#eAssunto').value.trim() }).eq('id', editando.id);
+  if (error) {
+    if (error.code === '23505') return aviso('Esse número já está em uso por outro registro ativo (mesmo tipo e ano).', 1);
+    return aviso('Não foi possível salvar. Verifique sua permissão.', 1);
+  }
   $('#dEd').close(); aviso('Registro atualizado.'); carregar();
 };
 
