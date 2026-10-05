@@ -64,22 +64,16 @@
   // Armazena todos os documentos do ano carregados para filtragem instantânea
   let docs = { todos: [], editando: null };
 
-  // Busca o próximo número sequencial exclusivo da seção, tipo e ano
+  // Busca o MENOR número livre (preenche "buracos" deixados por documentos excluídos).
+  // A regra mora no banco (função proximo_numero_doc), a mesma usada pelo gatilho de INSERT.
   async function obterProximoNumero(tipo, ano, secao) {
     const dbClient = getDb();
-    if (!dbClient) return 1;
-
-    const { data, error } = await dbClient
-      .from('documentos_pm')
-      .select('numero')
-      .eq('tipo', tipo)
-      .eq('ano', ano)
-      .eq('secao', secao)
-      .order('numero', { ascending: false })
-      .limit(1);
-
-    if (error || !data || data.length === 0) return 1;
-    return (data[0].numero || 0) + 1;
+    if (!dbClient) return null;
+    const { data, error } = await dbClient.rpc('proximo_numero_doc', {
+      p_tipo: tipo, p_ano: ano, p_secao: secao
+    });
+    if (error || typeof data !== 'number') return null;
+    return data;
   }
 
   // Previsão do próximo número em tempo real
@@ -94,6 +88,7 @@
     prevEl.value = 'Calculando…';
     try {
       const prox = await obterProximoNumero(tipo, ano, secao);
+      if (prox === null) { prevEl.value = '---'; return; }
       const numFmt = String(prox).padStart(3, '0');
       const cod = getCodigoSecao(secao);
       prevEl.value = `3BPMI-${numFmt}/${cod}/${ano}`;
@@ -266,6 +261,8 @@
         <dialog id="dNumEd">
           <form id="fNumEd">
             <h2 id="numEdTitulo">Editar Documento</h2>
+            <label>Nº do documento<input type="number" id="numEdNumero" min="1" step="1" required></label>
+            <p class="cont" id="numEdAviso" style="margin:-4px 0 8px;font-size:.8rem">Altere apenas se necessário. O sistema não aceita número já usado por outro documento ativo do mesmo tipo, seção e ano.</p>
             <label>Data<input type="date" id="numEdData" required></label>
             <label>Destinatário / Interessado<input type="text" id="numEdInteressado"></label>
             <label>Assunto<textarea id="numEdAssunto" required></textarea></label>
@@ -350,6 +347,7 @@
       b.disabled = true;
       try {
         const numero = await obterProximoNumero(tipo, ano, secao);
+        if (numero === null) throw new Error('Não foi possível obter o próximo número.');
         const novoDoc = {
           tipo,
           numero,
@@ -393,6 +391,7 @@
         if (!await getConfirmarSenha(`Editar ${refDoc}.`)) return;
         docs.editando = r;
         $('#numEdTitulo').textContent = `Editar: ${refDoc}`;
+        $('#numEdNumero').value = r.numero;
         $('#numEdData').value = r.data;
         $('#numEdInteressado').value = r.interessado || '';
         $('#numEdAssunto').value = r.assunto || '';
@@ -409,21 +408,29 @@
       }
     });
 
-    // Salvar edição
+    // Salvar edição (inclui o nº do documento)
     $('#fNumEd').onsubmit = async e => {
       e.preventDefault();
       const dbClient = getDb();
+      const numero = parseInt($('#numEdNumero').value, 10);
+      if (!Number.isInteger(numero) || numero < 1) return getAviso('Informe um número válido (maior que zero).', 1);
+
       const { error } = await dbClient.from('documentos_pm').update({
+        numero,
         data: $('#numEdData').value,
         interessado: $('#numEdInteressado').value.trim(),
         assunto: $('#numEdAssunto').value.trim()
       }).eq('id', docs.editando.id);
 
-      if (error) return getAviso('Não foi possível salvar as alterações.', 1);
+      if (error) {
+        if (error.code === '23505') return getAviso('Esse número já está em uso por outro documento ativo (mesmo tipo, seção e ano).', 1);
+        return getAviso('Não foi possível salvar as alterações.', 1);
+      }
 
       $('#dNumEd').close();
       getAviso('Documento atualizado com sucesso.');
       carregarDocs();
+      atualizarPrevisao();
     };
   }
 
