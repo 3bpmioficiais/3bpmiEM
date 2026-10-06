@@ -86,10 +86,35 @@
   ];
   const tipoFreq = id => TIPOS_FREQ.find(t => t.id === id);
 
+  // Nome da seção conforme aparece no cabeçalho do relatório (EM-P/X)
+  const SECAO_EM = {
+    p1:  'EM-P/1',
+    p3:  'EM-P/3',
+    p4:  'EM-P/4',
+    p5:  'EM-P/5',
+    sjd: 'EM-SPJMD'
+  };
+
+  // Converte uma imagem local em base64 (para embutir no .doc do Word)
+  async function imagemParaBase64(url) {
+    try {
+      const r = await fetch(url, { cache: 'force-cache' });
+      if (!r.ok) return '';
+      const blob = await r.blob();
+      return await new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onloadend = () => res(fr.result);
+        fr.onerror = rej;
+        fr.readAsDataURL(blob);
+      });
+    } catch { return ''; }
+  }
+
+  const MESES_ABREV = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
   const hh = v => v ? v.replace(':', 'h') : 'XXhXX';
   const dataLocal = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
   const isoData = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  let freq = { lista: [], ord: '1º', editando: null, pol: '' };
+  let freq = { lista: [], ord: '1º', editando: null };
 
   function semanaUtil(s) {
     const d = dataLocal(s), seg = new Date(d);
@@ -203,6 +228,99 @@
         <div class="fr-acoes"><button class="mini" data-fe="${esc(r.id)}">Editar</button><button class="mini perigo" data-fx="${esc(r.id)}">Excluir</button></div></div>`).join('')}
     </section>`).join('') || '<p class="cont">Nenhum lançamento neste mês.</p>';
   }
+  
+    async function exportarRelatorio() {
+    const mes = mesRef();
+    if (!mes) return getAviso('Selecione um mês de referência.', 1);
+
+    const [y, m] = mes.split('-').map(Number);
+    const sec = obterSecaoAtual();
+    if (sec === 'oficiais') {
+      return getAviso('Relatório de alterações de escala não disponível para a seção de Oficiais.', 1);
+    }
+
+    const b = $('#bRelatorio');
+    if (b) b.disabled = true;
+
+    try {
+      const ultimoDia = new Date(y, m, 0).getDate();
+      const todosPol  = Object.values(efetivoAtual()).flat();
+      const registros = freq.lista.filter(r => todosPol.includes(r.policial));
+
+      // Agrupa registros por dia (ISO yyyy-mm-dd)
+      const porDia = {};
+      registros.forEach(r => (porDia[r.data] ||= []).push(r));
+
+      const secNome = SECAO_EM[sec] || `EM-${sec.toUpperCase()}`;
+      const mesAbv  = MESES_ABREV[m - 1];
+      const anoAbv  = String(y).slice(-2);
+
+      // Embutir o brasão em base64 (fica visualizável dentro do .doc)
+      const imgB64 = await imagemParaBase64('Brasão_3BC.png');
+
+      // Blocos de cada dia (01 a 31, conforme o mês real)
+      const blocos = [];
+      for (let d = 1; d <= ultimoDia; d++) {
+        const iso     = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dataFmt = `${String(d).padStart(2, '0')}${mesAbv}${anoAbv}`;
+        const regs = (porDia[iso] || [])
+          .map(r => `<p class="reg">${esc(r.texto)}</p>`)
+          .join('');
+        blocos.push(`<p class="dia"><b>${dataFmt}</b></p>${regs}`);
+      }
+
+      const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Alterações na Escala</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page { size: A4 portrait; margin: 2cm 2.5cm; }
+body { font-family: "Times New Roman", serif; font-size: 12pt; color: #000; }
+.cab { text-align: center; line-height: 1.25; margin: 0 0 4px; }
+.cab p { margin: 0; font-size: 10pt; }
+.cab p.g { font-weight: 700; font-size: 11pt; }
+h1 { text-align: center; font-size: 12pt; font-weight: 700; margin: 18px 0 4px; text-transform: uppercase; }
+.sub { text-align: center; font-size: 12pt; font-weight: 700; margin: 0 0 22px; }
+.dia { margin: 12px 0 4px; font-size: 11pt; }
+.reg { margin: 2px 0 2px 24px; font-size: 11pt; text-align: justify; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="cab">
+<p>SECRETARIA DA SEGURANÇA PÚBLICA</p>
+<p class="g">POLÍCIA MILITAR DO ESTADO DE SÃO PAULO</p>
+<p>COMANDO DE POLICIAMENTO DO INTERIOR TRÊS</p>
+<p class="g">TERCEIRO BATALHÃO DE POLÍCIA MILITAR DO INTERIOR</p>
+${imgB64 ? `<p><img src="${imgB64}" width="90" height="90" alt=""></p>` : ''}
+</div>
+<h1>Alterações na Escala de Serviço Administrativo "${secNome}"</h1>
+<p class="sub">DE: 01 A ${String(ultimoDia).padStart(2, '0')}${mesAbv}${anoAbv}</p>
+${blocos.join('')}
+</body>
+</html>`;
+
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `Alteracoes_Escala_${secNome.replace(/\//g, '-')}_${mesAbv}${anoAbv}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      getAviso('Relatório gerado com sucesso.');
+    } catch (err) {
+      console.error(err);
+      getAviso('Não foi possível gerar o relatório.', 1);
+    } finally {
+      if (b) b.disabled = false;
+    }
+  }
 
   function garantirDialogs() {
     if (!$('#dFreq')) {
@@ -219,9 +337,12 @@
             <div id="fTipos"></div>
             <div class="acoes"><button class="btn">Registrar lançamento</button></div>
           </form>
-          <div class="fr-topo">
+           <div class="fr-topo">
             <h3>Lançamentos de <span id="fMesNome"></span></h3>
-            <select id="fFiltro" aria-label="Filtrar por policial"></select>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select id="fFiltro" aria-label="Filtrar por policial"></select>
+              <button class="btn ghost" id="bRelatorio" type="button">Extrair Relatório</button>
+            </div>
           </div>
           <div id="fLista"></div>
         </dialog>
@@ -246,16 +367,14 @@
     if (t) t.textContent = sec === 'p3' ? 'Controle de Frequência' : `Controle de Frequência (${nomeSec})`;
     montarMeses();
     montarFormFreq(); 
-    montarMeses();
-montarFormFreq(); 
-freq.pol = $('#fPol').value || '';    // <-- LINHA NOVA
-$('#fData').value = ''; 
-ajustarMes();
-$('#dFreq').showModal();
+    $('#fData').value = ''; 
+    ajustarMes();
+    $('#dFreq').showModal();
   }
 
   function inicializarEventos() {
     garantirDialogs();
+    $('#bRelatorio').onclick = exportarRelatorio;    
 
     document.addEventListener('click', e => {
       if (e.target.closest('[data-freq]')) {
