@@ -554,9 +554,6 @@ function abrir(k) {
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   contar();
 
-  // Oculta o botão do cabeçalho se estiver na aba de Oficiais
-  const btnNum = $('#btnNumerador');
-  if (btnNum) btnNum.hidden = (k === 'oficiais');
 }
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
