@@ -303,36 +303,6 @@ th{position:sticky;top:0;background:var(--panel)}
   </form>
 </dialog>
 
-<!-- Controle de Frequência -->
-<dialog id="dFreq">
-  <div class="topo"><h2 id="dFreqTitulo">Controle de Frequência</h2><button class="mini" data-fechar>Fechar</button></div>
-  <div class="dupla"><label>Mês de referência<select id="fMesSel"></select></label><label>Ano<select id="fAnoSel"></select></label></div>
-  <form id="fFreq" class="fr-form">
-    <h3>Novo lançamento</h3>
-    <div class="dupla">
-      <label>Data<input type="date" id="fData" required></label>
-      <label>Efetivo<select id="fPol" required></select></label>
-    </div>
-    <div id="fTipos"></div>
-    <div class="acoes"><button class="btn">Registrar lançamento</button></div>
-  </form>
-  <div class="fr-topo">
-    <h3>Lançamentos de <span id="fMesNome"></span></h3>
-    <select id="fFiltro" aria-label="Filtrar por policial"></select>
-  </div>
-  <div id="fLista"></div>
-</dialog>
-
-<!-- Editar lançamento de frequência -->
-<dialog id="dFreqEd">
-  <form id="fFreqEd">
-    <h2 id="feTitulo">Editar lançamento</h2>
-    <label>Data<input type="date" id="feData" required></label>
-    <label>Texto<textarea id="feTexto" required></textarea></label>
-    <div class="acoes"><button type="button" class="btn ghost" data-fechar>Cancelar</button><button class="btn">Salvar alterações</button></div>
-  </form>
-</dialog>
-
 <!-- Confirmação por senha -->
 <dialog id="dSenha">
   <form id="fSenha">
@@ -554,9 +524,6 @@ function abrir(k) {
   document.querySelector('#abas [aria-current=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   contar();
 
-  // Oculta o botão do cabeçalho se estiver na aba de Oficiais
-  const btnNum = $('#btnNumerador');
-  if (btnNum) btnNum.hidden = (k === 'oficiais');
 }
 $('#abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) location.hash = b.dataset.aba; };
 
