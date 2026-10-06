@@ -49,6 +49,11 @@
       'NUMEC': ['Cb PM Paulo']
     }
   };
+  
+    // >>> ANOS DISPONÍVEIS NO CONTROLE DE FREQUÊNCIA <<<
+  // Edite esta lista para incluir ou remover anos do seletor "Ano".
+  // A ordem aqui é a ordem exibida na tela.
+  const ANOS_DISPONIVEIS = [2026, 2027, 2028, 2029, 2030];
 
   // Identifica a aba ativa
   function obterSecaoAtual() {
@@ -185,8 +190,10 @@
     if ($('#fAnoSel').options.length) return;
     const h = new Date(), a = h.getFullYear();
     $('#fMesSel').innerHTML = MESES.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n[0].toUpperCase() + n.slice(1)}</option>`).join('');
-    $('#fAnoSel').innerHTML = [a - 2, a - 1, a, a + 1].map(y => `<option>${y}</option>`).join('');
-    $('#fMesSel').value = String(h.getMonth() + 1).padStart(2, '0'); $('#fAnoSel').value = a;
+    $('#fAnoSel').innerHTML = ANOS_DISPONIVEIS.map(y => `<option>${y}</option>`).join('');
+    $('#fMesSel').value = String(h.getMonth() + 1).padStart(2, '0');
+    // Seleciona o ano atual se ele estiver na lista; senão, o primeiro ano disponível.
+    $('#fAnoSel').value = ANOS_DISPONIVEIS.includes(a) ? a : ANOS_DISPONIVEIS[0];
   }
 
   function ajustarMes() {
@@ -374,7 +381,8 @@ ${blocos.join('')}
 
   function inicializarEventos() {
     garantirDialogs();
-    $('#bRelatorio').onclick = exportarRelatorio;    
+    const bRel = $('#bRelatorio');
+if (bRel) bRel.onclick = exportarRelatorio;
 
     document.addEventListener('click', e => {
       if (e.target.closest('[data-freq]')) {
