@@ -89,7 +89,7 @@
   const hh = v => v ? v.replace(':', 'h') : 'XXhXX';
   const dataLocal = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
   const isoData = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  let freq = { lista: [], ord: '1º', editando: null };
+  let freq = { lista: [], ord: '1º', editando: null, pol: '' };
 
   function semanaUtil(s) {
     const d = dataLocal(s), seg = new Date(d);
@@ -246,9 +246,12 @@
     if (t) t.textContent = sec === 'p3' ? 'Controle de Frequência' : `Controle de Frequência (${nomeSec})`;
     montarMeses();
     montarFormFreq(); 
-    $('#fData').value = ''; 
-    ajustarMes();
-    $('#dFreq').showModal();
+    montarMeses();
+montarFormFreq(); 
+freq.pol = $('#fPol').value || '';    // <-- LINHA NOVA
+$('#fData').value = ''; 
+ajustarMes();
+$('#dFreq').showModal();
   }
 
   function inicializarEventos() {
