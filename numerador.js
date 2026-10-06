@@ -187,7 +187,7 @@
         <td class="nw">${fmtData(r.data)}</td>
         <td>
           <b>${esc(r.assunto)}</b>
-          ${r.interessado ? `<br><small class="cont">Destinato: ${esc(r.interessado)}</small>` : ''}
+          ${r.interessado ? `<br><small class="cont">Destina: ${esc(r.interessado)}</small>` : ''}
         </td>
         <td class="nw">
           <button class="mini" data-ned="${esc(r.id)}">Editar</button>
