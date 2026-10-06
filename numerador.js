@@ -3,11 +3,20 @@
  * 3º Batalhão de Caçadores
  */
 (() => {
+  (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmtData = d => d ? d.split('-').reverse().join('/') : '';
   const getDb = () => window.db || (typeof db !== 'undefined' ? db : null);
   const getUsuario = () => window.usuario || (typeof usuario !== 'undefined' ? usuario : null);
+
+  // >>> NOVO: retorna a data de HOJE no formato YYYY-MM-DD usando o fuso do navegador (Brasília),
+  // não UTC. Sem isso, entre 21h e 00h o "hoje" ficaria adiantado em 1 dia.
+  const hojeLocal = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
 
   const getAviso = (msg, erro) => {
     if (typeof aviso === 'function') aviso(msg, erro);
@@ -44,6 +53,11 @@
     sjd: '06'
   };
 
+    // >>> ANOS DISPONÍVEIS NO NUMERADOR <<<
+  // Edite esta lista para incluir ou remover anos do filtro "Ano de Referência".
+  // A ordem aqui é a ordem exibida na tela.
+  const ANOS_DISPONIVEIS = [2026, 2027, 2028, 2029, 2030];
+
   function obterSecaoAtual() {
     return window.secaoAtual || 
            (typeof secaoAtual !== 'undefined' ? secaoAtual : '') || 
@@ -79,7 +93,7 @@
   // Previsão do próximo número em tempo real
   async function atualizarPrevisao() {
     const tipo = $('#numTipo')?.value;
-    const dataVal = $('#numData')?.value || new Date().toISOString().slice(0, 10);
+    const dataVal = $('#numData')?.value || hojeLocal();
     const ano = parseInt(dataVal.split('-')[0], 10);
     const secao = obterSecaoAtual();
     const prevEl = $('#numPrevisao');
@@ -280,9 +294,9 @@
     const anoSel = $('#numFiltroAno');
     if (!anoSel || anoSel.options.length) return;
     const anoAtual = new Date().getFullYear();
-    anoSel.innerHTML = [anoAtual, anoAtual - 1, anoAtual - 2, anoAtual + 1]
-      .map(y => `<option value="${y}">${y}</option>`).join('');
-    anoSel.value = anoAtual;
+    anoSel.innerHTML = ANOS_DISPONIVEIS.map(y => `<option value="${y}">${y}</option>`).join('');
+    // Seleciona o ano atual se ele estiver na lista; senão, o primeiro ano disponível.
+    anoSel.value = ANOS_DISPONIVEIS.includes(anoAtual) ? anoAtual : ANOS_DISPONIVEIS[0];
   }
 
   function abrirNumerador() {
@@ -300,8 +314,7 @@
     const t = $('#dNumTitulo');
     if (t) t.textContent = `Numerador de Documentos · ${nomeSec}`;
 
-    const hoje = new Date().toISOString().slice(0, 10);
-    if (!$('#numData').value) $('#numData').value = hoje;
+    if (!$('#numData').value) $('#numData').value = hojeLocal();
 
     atualizarPrevisao();
     carregarDocs();
@@ -311,11 +324,11 @@
   function inicializarEventos() {
     garantirDialogs();
 
-    document.addEventListener('click', e => {
-      if (e.target.closest('#btnNumerador') || e.target.closest('[data-numerador]')) {
-        abrirNumerador();
-      }
-    });
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-numerador]')) {
+    abrirNumerador();
+  }
+});
 
     $('#numTipo').onchange = atualizarPrevisao;
     $('#numData').onchange = atualizarPrevisao;
@@ -441,4 +454,5 @@
   }
 
   window.abrirNumerador = abrirNumerador;
+})();
 })();
